@@ -12,7 +12,7 @@
   
 
 
-    d3.csv("tree_fixation_points.csv")
+    d3.csv("data_preprocessed/tree_fixation.csv")
         .then(function(data){
             fixationData = data;
             console.log(data);
@@ -38,10 +38,10 @@
                 .data(data)
                 .enter().append("circle")
                 .attr("cx", function(d){
-                        return d.screen_x;
+                        return d.x;
                     })
                 .attr("cy", function(d){
-                        return d.secren_y;
+                        return d.y;
                     })
                 .attr("r", function(d){
                     return d.duration/100;
