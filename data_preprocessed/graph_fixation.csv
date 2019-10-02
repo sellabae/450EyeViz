@@ -1,4 +1,4 @@
-number,time,duration,screen_x,secrren_y
+number,time,duration,x,y
 1,172,120,721,344
 2,491,100,709,360
 3,790,100,680,432
