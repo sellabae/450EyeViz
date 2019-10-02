@@ -2,10 +2,62 @@
 <html lang="en">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-<!-- JavaScript -->
-
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v5.min.js"></script>
+
+<!-- JavaScript -->
+<script type="text/javascript">
+    
+    var fixationData;
+  
+
+
+    d3.csv("tree_fixation_points.csv")
+        .then(function(data){
+            fixationData = data;
+            console.log(data);
+
+            drawCircles(fixationData);
+        });
+
+
+      
+
+
+    function drawCircles(data){
+
+                console.log("Start");
+
+                var svg = d3.select("#data")
+                .append("svg")
+                .attr("width", '800px')
+                .attr("height", '400px');
+
+                svg.selectAll("circle")
+                .data(data)
+                .enter().append("circle")
+                .attr("cx", function(d){
+                        return d.screen_x;
+                    })
+                .attr("cy", function(d){
+                        return d.secren_y;
+                    })
+                .attr("r", function(d){
+                    return d.duration/100;
+                })
+                .attr("fill", "grey");
+                console.log("End");
+    }
+    
+
+    //console.log(fixationData);
+
+    
+</script>
+
+
+
+
 
 <!-- Bootstrap -->
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -41,8 +93,9 @@
         <div class="container-fluid row" style="height: 75vh">
             <!-- Visualization -->
             <div class="col-md-8 border border-primary">
-                Data Visualization
+                
                <div class="" id="data">
+                    
                </div>
             </div>
 
