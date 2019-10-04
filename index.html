@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<!-- JavaScript -->
+<script type="text/javascript">
+    
+    var fixationData;
+  
+
+
+    d3.csv("./data_preprocessed/tree_fixation.csv")
+        .then(function(data){
+            fixationData = data;
+            console.log(data);
+            drawCircles(fixationData);
+        });
+
+    
+
+
+
+
+
+    function drawCircles(data){
+
+            /*var svg = d3.select("#data")
+                .append("svg")
+                .attr("width", '1000')
+                .attr("height", '1000');*/
+
+            var svg = d3.select("#dataSvg");
+
+            svg.selectAll("circle")
+                .data(data)
+                .enter().append("circle")
+                .attr("cx", function(d){
+                        return d.x;
+                    })
+                .attr("cy", function(d){
+                        return d.y;
+                    })
+                .attr("r", function(d){
+                    return d.duration/100;
+                })
+                .attr("fill", "grey");
+                console.log("End");
+    }
+    
+
+    //console.log(fixationData);
+
+    
+</script>
+
+
+
+
+
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Eye-Tracking Data Visualization</title>
+</head>
+<body>
+
+<div class="container-fluid">
+
+    <div class="container-fluid row" style="height: 10vh">
+        <!-- Participant, Tree and graph -->
+       <div class="col-md-8 border border-primary pt-3">
+           Participant: <span id="participantId">7</span>
+       </div>
+
+        <div class="col-md-4 border border-primary pt-3">
+            <div class="col-sm-3 form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="treeRadio" value="tree">
+                <label class="form-check-label" for="inlineRadio1">Tree</label>
+            </div>
+            <div class="col-sm-2 form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="graphRadio" value="graph">
+                <label class="form-check-label" for="inlineRadio2">Graph</label>
+            </div>
+        </div>
+
+    </div>
+
+        <div class="container-fluid row" style="height: 75vh">
+            <!-- Visualization -->
+            <div class="col-md-8 border border-primary">
+                
+               <div class="" id="data" >
+                    <svg id="dataSvg" width="100%" height="1000"></svg>
+               </div>
+            </div>
+
+            <!-- Side Panel for duration, pupil size and extra information-->
+            <div class="col-md-4 border border-primary pt-4">
+                <div class="border border-primary" style="height: 35vh">Extra Information</div>
+                <div class="border border-primary" style="height: 15vh">Duration</div>
+                <div class="border border-primary" style="height: 15vh">Pupil Size</div>
+            </div>
+        </div>
+
+        <!-- Time range slider -->
+        <div class="container-fluid row" style="height: 10vh">
+            <div class="col-md-12 border border-primary">
+                <label for="TimeRange">Time range</label>
+            </div>
+            <div class="col-md-12 border border-primary">
+                <input type="range" class="custom-range" id="timeRange">
+            </div>
+        </div>
+
+</div>
+
+</body>
+</html>
