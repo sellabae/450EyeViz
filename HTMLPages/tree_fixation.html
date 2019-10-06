@@ -8,16 +8,30 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var fixationData;
+    var fixationData, gazeData, coordinateScale, radiusScale;
 
-    d3.csv("tree_fixation_points.csv")
-        .then(function(data){
-            fixationData = data;
-            console.log(data);
-            drawCircles(fixationData);
+    //fetching csvs
+    Promise.all([
+        d3.csv("../data_preprocessed/tree_fixation.csv"),
+        d3.csv("../data_preprocessed/tree_gaze.csv")
+        ]).then(function(files){
+
+            fixationData = files[0];
+            gazeData = files[1];
+            drawCircles(fixationData, gazeData);
+
         });
 
-    function drawCircles(data){
+
+
+    //calculates scales for both radii and coordinates of circles
+    function calculateScales(fixationData, GazeData){
+
+    }
+
+
+    //draws the circles
+    function drawCircles(fixationData, gazeData){
 
             /*var svg = d3.select("#data")
                 .append("svg")
@@ -34,13 +48,13 @@
             var svg = d3.select("#dataSvg");
 
             svg.selectAll("circle")
-                .data(data)
+                .data(fixationData)
                 .enter().append("circle")
                 .attr("cx", function(d){
-                        return d.screen_x;
+                        return d.x;
                     })
                 .attr("cy", function(d){
-                        return d.screen_y;
+                        return d.y;
                     })
                 .attr("r", function(d){
                     return d.duration/100;
@@ -66,6 +80,8 @@
 						tooltip.style("visibility", "hidden");
 					});
     }
+
+
 
 </script>
 
