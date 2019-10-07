@@ -8,9 +8,26 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale;
+     var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale, svgDiv, svgHeight, svgWidth, file;
+    
+    document.addEventListener('DOMContentLoaded', function(){
+        svgDiv = document.getElementById("data");
+        svgHeight = svgDiv.offsetHeight;
+        svgWidth = svgDiv.offsetWidth;
+        fetchCsvCallOthers();
 
-    d3.csv("./data_preprocessed/merged_tree.csv")
+    });
+
+    function fetchCsvCallOthers(){
+
+        
+      var drawnSvg = document.getElementById("drawnSvg");
+      if(drawnSvg!= undefined)
+        svgDiv.removeChild(drawnSvg);
+
+
+        checkRadio();
+        d3.csv(file)
         .then(function(data){
             
             mergedData = data;
@@ -18,12 +35,23 @@
             setScales(mergedData);  
             drawCircles(mergedData);
         });
+    }
+
+    
+    function checkRadio(){
+
+        if(document.getElementById("treeRadio").checked)
+            file = "./data_preprocessed/merged_tree.csv";
+        else
+            file = "./data_preprocessed/merged_graph.csv";
+
+    }
 
     
     function setScales(data){
         linearScaleX = d3.scaleLinear()
                         .domain([0, 1286])
-                        .range([0 + 50,750]);
+                        .range([0 + 50,svgWidth-50]);
 
         linearScaleY = d3.scaleLinear()
                         .domain([0, 859])
@@ -53,7 +81,8 @@
             var svg = d3.select("#data")
                 .append("svg")
                 .attr("width", '827')
-                .attr("height", '406');
+                .attr("height", '406')
+                .attr("id", "drawnSvg");
 
             svg.selectAll("circle")
                 .data(data)
@@ -120,11 +149,11 @@
 
         <div class="col-md-4 border border-primary pt-3">
             <div class="col-sm-3 form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="treeRadio" value="tree">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="treeRadio" value="tree" checked="true" onclick="fetchCsvCallOthers()">
                 <label class="form-check-label" for="inlineRadio1">Tree</label>
             </div>
             <div class="col-sm-2 form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="graphRadio" value="graph">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="graphRadio" value="graph" onclick="fetchCsvCallOthers()">
                 <label class="form-check-label" for="inlineRadio2">Graph</label>
             </div>
         </div>
