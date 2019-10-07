@@ -8,15 +8,13 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var mergedData,linearScaleX,linearScaleY, linearScaleDuration;
-
+    var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale;
 
     d3.csv("./data_preprocessed/merged_tree.csv")
         .then(function(data){
             
             mergedData = data;
             console.log(mergedData);
-            console.log(d3.max( mergedData, function( d ) { return d.y }))
             setScales(mergedData);  
             drawCircles(mergedData);
         });
@@ -24,19 +22,33 @@
     
     function setScales(data){
         linearScaleX = d3.scaleLinear()
-                        .domain([0, 1230])
+                        .domain([0, 1286])
                         .range([0 + 50,750]);
 
         linearScaleY = d3.scaleLinear()
-                        .domain([0, d3.max( mergedData, function( d ) { return d.y })])
+                        .domain([0, 859])
                         .range([0,400]);
 
         linearScaleDuration = d3.scaleLinear()
-                        .domain([0, d3.max( mergedData, function( d ) { return d.duration })])
-                        .range([0,5]);
+                        .domain([0, 2074])
+                        .range([0,10]);
+
+        var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
+
+        colorScale = d3.scaleQuantile()
+                        .domain([0.0000337552742641911,1.176466245])
+                        .range(colorCodes);
     }
 
     function drawCircles(data){
+
+            var tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .text("");
+
 
             var svg = d3.select("#data")
                 .append("svg")
@@ -55,7 +67,29 @@
                 .attr("r", function(d){
                     return linearScaleDuration(d.duration);
                 })
-                .attr("fill", "grey");
+                .attr("fill", function(d){
+                    return colorScale(d.avg_dilation);
+                })
+                .on('mouseover', function(d, i) {
+                        d3.select(this)
+                                .attr("fill", "grey")
+                                .style("opacity", 1.0);
+                                tooltip.style("visibility", "visible");
+                                tooltip.text("Fixation Duration(ms): " + d.duration + ", " + "Pupil Size: " + d.avg_dilation);
+                    })
+                .on("mousemove", function(d, i) {
+                        return tooltip.style("top",
+                            (d3.event.pageY-10)+"px")
+                                .style("left",(d3.event.pageX+10)+"px");
+                    })
+                .on('mouseout', function(d, i){
+                        d3.select(this)
+                                .attr("fill", function(d){
+                                    return colorScale(d.avg_dilation);
+                                })
+                        .style("opacity", 1.0);
+                        tooltip.style("visibility", "hidden");
+                    });
     }
     
 
