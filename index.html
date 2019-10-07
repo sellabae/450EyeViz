@@ -38,6 +38,14 @@
         checkRadio();
         d3.csv(file)
         .then(function(data){
+
+
+            data.forEach(function(d) {
+            d.duration = +d.duration;
+            d.x = +d.x;
+            d.y = +d.y;
+            d.avg_dilation = +d.avg_dilation;
+            });
             
             mergedData = data;
             console.log(mergedData);
@@ -58,22 +66,35 @@
 
     
     function setScales(data){
+
+        var xMax = d3.max(data, function(d) { return d.x; });
+        var xMin = d3.min(data, function(d) { return d.x; });
+        //console.log("xMax "+xMax + " xMin "+xMin);
+
+        var yMax = d3.max(data, function(d) { return d.y; });
+        var yMin = d3.min(data, function(d) { return d.y; });
+        //console.log("yMax "+yMax + " yMin "+yMin);
+
+        var maxDilation = d3.max(data, function(d) { return d.avg_dilation; });
+        var minDilation = d3.min(data, function(d) { return d.avg_dilation; });
+        //console.log("maxDilation "+maxDilation + " minDilation "+minDilation);
+
         linearScaleX = d3.scaleLinear()
-                        .domain([0, 1286])
-                        .range([0 + 50,svgWidth-50]);
+                        .domain([xMin, xMax])
+                        .range([0 + 20,svgWidth-50]);
 
         linearScaleY = d3.scaleLinear()
-                        .domain([0, 859])
-                        .range([0,400]);
+                        .domain([0, 1220])
+                        .range([0 + 20,400]);
 
         linearScaleDuration = d3.scaleLinear()
-                        .domain([0, 2074])
+                        .domain([yMin, yMax])
                         .range([0,10]);
 
         var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
 
         colorScale = d3.scaleQuantile()
-                        .domain([0.0000337552742641911,1.176466245])
+                        .domain([minDilation,maxDilation])
                         .range(colorCodes);
     }
 
@@ -86,6 +107,7 @@
                 .style("visibility", "hidden")
                 .text("");
 
+              
             svg.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
