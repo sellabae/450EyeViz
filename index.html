@@ -8,23 +8,32 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-     var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale, svgDiv, svgHeight, svgWidth, file;
+    var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale, svg, svgDiv, svgHeight, svgWidth, file;
     
     document.addEventListener('DOMContentLoaded', function(){
+        
+        //drawing svg
         svgDiv = document.getElementById("data");
         svgHeight = svgDiv.offsetHeight;
         svgWidth = svgDiv.offsetWidth;
+        svg = d3.select("#data")
+            .append("svg")
+            .attr("width", svgWidth)
+            .attr("height", '406')
+            .attr("id", "drawnSvg");
+
+
         fetchCsvCallOthers();
 
     });
 
     function fetchCsvCallOthers(){
+    
 
-        
       var drawnSvg = document.getElementById("drawnSvg");
-      if(drawnSvg!= undefined)
-        svgDiv.removeChild(drawnSvg);
-
+      //removing previously drawn circles
+      if(drawnSvg != undefined)
+        d3.selectAll("circle").remove();
 
         checkRadio();
         d3.csv(file)
@@ -76,13 +85,6 @@
                 .style("z-index", "10")
                 .style("visibility", "hidden")
                 .text("");
-
-
-            var svg = d3.select("#data")
-                .append("svg")
-                .attr("width", '827')
-                .attr("height", '406')
-                .attr("id", "drawnSvg");
 
             svg.selectAll("circle")
                 .data(data)
