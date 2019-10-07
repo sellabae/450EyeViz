@@ -12,7 +12,7 @@
     
     document.addEventListener('DOMContentLoaded', function(){
         
-        //drawing svg
+        //setting global vars and drawing csv
         svgDiv = document.getElementById("data");
         svgHeight = svgDiv.offsetHeight;
         svgWidth = svgDiv.offsetWidth;
@@ -27,9 +27,9 @@
 
     });
 
+    //this fetches the csv, calls other functions
     function fetchCsvCallOthers(){
     
-
       var drawnSvg = document.getElementById("drawnSvg");
       //removing previously drawn circles
       if(drawnSvg != undefined)
@@ -38,8 +38,7 @@
         checkRadio();
         d3.csv(file)
         .then(function(data){
-
-
+            //converting all rows to int
             data.forEach(function(d) {
             d.duration = +d.duration;
             d.x = +d.x;
@@ -48,13 +47,13 @@
             });
             
             mergedData = data;
-            console.log(mergedData);
+            //console.log(mergedData);
             setScales(mergedData);  
             drawCircles(mergedData);
         });
     }
 
-    
+    //checks which radio button is checked
     function checkRadio(){
 
         if(document.getElementById("treeRadio").checked)
@@ -64,7 +63,7 @@
 
     }
 
-    
+    //sets the scales for x, y coordinates, duration and avg_dilation
     function setScales(data){
 
         var xMax = d3.max(data, function(d) { return d.x; });
@@ -98,6 +97,7 @@
                         .range(colorCodes);
     }
 
+    //draws circle points
     function drawCircles(data){
 
             var tooltip = d3.select("body")
