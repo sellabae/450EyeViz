@@ -8,48 +8,56 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var fixationData;
-  
+    var mergedData,linearScaleX,linearScaleY, linearScaleDuration;
 
 
-    d3.csv("./data_preprocessed/tree_fixation.csv")
+    d3.csv("./data_preprocessed/merged_tree.csv")
         .then(function(data){
-            fixationData = data;
-            console.log(data);
-            drawCircles(fixationData);
+            
+            mergedData = data;
+            console.log(mergedData);
+            console.log(d3.max( mergedData, function( d ) { return d.y }))
+            setScales(mergedData);  
+            drawCircles(mergedData);
         });
 
     
+    function setScales(data){
+        linearScaleX = d3.scaleLinear()
+                        .domain([0, 1230])
+                        .range([0 + 50,750]);
 
+        linearScaleY = d3.scaleLinear()
+                        .domain([0, d3.max( mergedData, function( d ) { return d.y })])
+                        .range([0,400]);
 
-
-
+        linearScaleDuration = d3.scaleLinear()
+                        .domain([0, d3.max( mergedData, function( d ) { return d.duration })])
+                        .range([0,5]);
+    }
 
     function drawCircles(data){
 
             var svg = d3.select("#data")
                 .append("svg")
-                .attr("width", '1000')
-                .attr("height", '1000');
+                .attr("width", '827')
+                .attr("height", '406');
 
             svg.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
                 .attr("cx", function(d){
-                        return d.x;
+                        return linearScaleX(d.x);
                     })
                 .attr("cy", function(d){
-                        return d.y;
+                        return linearScaleY(d.y);
                     })
                 .attr("r", function(d){
-                    return d.duration/100;
+                    return linearScaleDuration(d.duration);
                 })
                 .attr("fill", "grey");
-                console.log("End");
     }
     
-
-    //console.log(fixationData);
 
     
 </script>
