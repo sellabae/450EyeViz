@@ -8,50 +8,165 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var fixationData;
-  
-
-
-    d3.csv("./data_preprocessed/tree_fixation.csv")
-        .then(function(data){
-            fixationData = data;
-            console.log(data);
-            drawCircles(fixationData);
-        });
-
+    var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale, timeScale, svg, svgDiv, svgHeight, svgWidth, file;
     
+    document.addEventListener('DOMContentLoaded', function(){
+        
+        //setting global vars and drawing csv
+        svgDiv = document.getElementById("data");
+        svgHeight = svgDiv.offsetHeight;
+        svgWidth = svgDiv.offsetWidth;
+        svg = d3.select("#data")
+            .append("svg")
+            .attr("width", svgWidth)
+            .attr("height", '406')
+            .attr("id", "drawnSvg");
 
 
+        fetchCsvCallOthers();
 
+    });
 
+    //this fetches the csv, calls other functions
+    function fetchCsvCallOthers(){
+    
+      var drawnSvg = document.getElementById("drawnSvg");
+      //removing previously drawn circles
+      if(drawnSvg != undefined)
+        d3.selectAll("circle").remove();
 
+        checkRadio();
+        d3.csv(file)
+        .then(function(data){
+            //converting all rows to int
+            data.forEach(function(d) {
+            d.time = +d.time;
+            d.duration = +d.duration;
+            d.x = +d.x;
+            d.y = +d.y;
+            d.avg_dilation = +d.avg_dilation;
+            });
+            
+            mergedData = data;
+            setScales(mergedData);  
+            drawCircles(mergedData);
+        });
+    }
+
+    //checks which radio button is checked
+    function checkRadio(){
+
+        if(document.getElementById("treeRadio").checked)
+            file = "./data_preprocessed/merged_tree.csv";
+        else
+            file = "./data_preprocessed/merged_graph.csv";
+
+    }
+
+    //sets the scales for x, y coordinates, duration and avg_dilation
+    function setScales(data){
+
+        var xMax = d3.max(data, function(d) { return d.x; });
+        var xMin = d3.min(data, function(d) { return d.x; });
+        //console.log("xMax "+xMax + " xMin "+xMin);
+
+        var yMax = d3.max(data, function(d) { return d.y; });
+        var yMin = d3.min(data, function(d) { return d.y; });
+        //console.log("yMax "+yMax + " yMin "+yMin);
+
+        var maxDilation = d3.max(data, function(d) { return d.avg_dilation; });
+        var minDilation = d3.min(data, function(d) { return d.avg_dilation; });
+        //console.log("maxDilation "+maxDilation + " minDilation "+minDilation);
+
+        linearScaleX = d3.scaleLinear()
+                        .domain([xMin, xMax])
+                        .range([0 + 20,svgWidth-50]);
+
+        linearScaleY = d3.scaleLinear()
+                        .domain([0, 1220])
+                        .range([0 + 20,400]);
+
+        linearScaleDuration = d3.scaleLinear()
+                        .domain([yMin, yMax])
+                        .range([0,10]);
+
+        //var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
+
+        /*colorScale = d3.scaleQuantile()
+                        .domain([minDilation,maxDilation])
+                        .range(colorCodes);*/
+
+        colorScale = d3.scaleLinear()
+                        .domain([minDilation, (minDilation+maxDilation)/2, maxDilation])
+                        .range(["#2c7bb6", "#ffff8c", "#d7191c"])
+                        .interpolate(d3.interpolateHcl);
+
+        var maxTime = d3.max(data, function(d) { return d.time});
+        var minTime = d3.min(data, function(d) { return d.time});
+        //console.log("maxTime "+maxTime + " minTime "+minTime);
+
+        timeScale = d3.scaleLinear()
+                        .domain([minTime, maxTime])
+                        .range([0, 10]);
+    }
+
+    //draws circle points
     function drawCircles(data){
 
-            /*var svg = d3.select("#data")
-                .append("svg")
-                .attr("width", '1000')
-                .attr("height", '1000');*/
-
-            var svg = d3.select("#dataSvg");
-
+            var tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltipDiv")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .text("");
+              
             svg.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
                 .attr("cx", function(d){
-                        return d.x;
+                        return linearScaleX(d.x);
                     })
                 .attr("cy", function(d){
-                        return d.y;
+                        return linearScaleY(d.y);
                     })
                 .attr("r", function(d){
-                    return d.duration/100;
+                    
+                    return linearScaleDuration(d.duration);
                 })
-                .attr("fill", "grey");
-                console.log("End");
+                .attr("fill", function(d){
+                    return colorScale(d.avg_dilation);
+                })
+                .attr("opacity", 0)
+                .on('mouseover', function(d, i) {
+                        d3.select(this)
+                                .attr("fill", "grey")
+                                .style("opacity", 1.0);
+                                tooltip.style("visibility", "visible");
+                                tooltip.text("Fixation Duration: " + d.duration + ",\n " + "Timestamp: " + d.time + ", Pupil Size: " + d.avg_dilation);
+                    })
+                .on("mousemove", function(d, i) {
+                        return tooltip.style("top",
+                            (d3.event.pageY-10)+"px")
+                                .style("left",(d3.event.pageX+10)+"px");
+                    })
+                .on('mouseout', function(d, i){
+                        d3.select(this)
+                                .attr("fill", function(d){
+                                    return colorScale(d.avg_dilation);
+                                })
+                        .style("opacity", 1.0);
+                        tooltip.style("visibility", "hidden");
+                    })
+                .transition()
+                .delay(function(d, i){
+                    return timeScale(i*d.time);
+                })
+                .attr("opacity", 1);
+
+
     }
     
-
-    //console.log(fixationData);
 
     
 </script>
@@ -67,6 +182,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Eye-Tracking Data Visualization</title>
+
+    <style type="text/css">
+        
+        .tooltipDiv{
+            background-color: #FFFBBE;
+            border-radius: 5px;
+            border: 1px solid #FCEC02;
+        }
+
+    </style>
+
 </head>
 <body>
 
@@ -80,11 +206,11 @@
 
         <div class="col-md-4 border border-primary pt-3">
             <div class="col-sm-3 form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="treeRadio" value="tree">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="treeRadio" value="tree" checked="true" onclick="fetchCsvCallOthers()">
                 <label class="form-check-label" for="inlineRadio1">Tree</label>
             </div>
             <div class="col-sm-2 form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="graphRadio" value="graph">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="graphRadio" value="graph" onclick="fetchCsvCallOthers()">
                 <label class="form-check-label" for="inlineRadio2">Graph</label>
             </div>
         </div>
@@ -96,15 +222,22 @@
             <div class="col-md-8 border border-primary">
                 
                <div class="" id="data" >
-                    <svg id="dataSvg" width="100%" height="1000"></svg>
+                   <!--SVG is added here-->
                </div>
             </div>
 
             <!-- Side Panel for duration, pupil size and extra information-->
             <div class="col-md-4 border border-primary pt-4">
-                <div class="border border-primary" style="height: 35vh">Extra Information</div>
-                <div class="border border-primary" style="height: 15vh">Duration</div>
-                <div class="border border-primary" style="height: 15vh">Pupil Size</div>
+                <div class="border border-primary" style="height: 35vh; padding: 5px 0 0 5px; ">
+                    <h5>Extra Information</h5><p>Show Tooltip Here Intead of on the plot itself
+                </div>
+
+                <div class="border border-primary" style="height: 15vh; padding: 5px 0 0 5px; ">
+                    <h5>Duration</h5>
+                </div>
+                <div class="border border-primary" style="height: 15vh; padding: 5px 0 0 5px; ">
+                    <h5>Pupil Size</h5>
+                </div>
             </div>
         </div>
 
