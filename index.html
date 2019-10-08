@@ -8,7 +8,7 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale, svg, svgDiv, svgHeight, svgWidth, file;
+    var mergedData,linearScaleX,linearScaleY, linearScaleDuration,colorScale, timeScale, svg, svgDiv, svgHeight, svgWidth, file;
     
     document.addEventListener('DOMContentLoaded', function(){
         
@@ -40,6 +40,7 @@
         .then(function(data){
             //converting all rows to int
             data.forEach(function(d) {
+            d.time = +d.time;
             d.duration = +d.duration;
             d.x = +d.x;
             d.y = +d.y;
@@ -47,7 +48,6 @@
             });
             
             mergedData = data;
-            //console.log(mergedData);
             setScales(mergedData);  
             drawCircles(mergedData);
         });
@@ -90,11 +90,24 @@
                         .domain([yMin, yMax])
                         .range([0,10]);
 
-        var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
+        //var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
 
-        colorScale = d3.scaleQuantile()
+        /*colorScale = d3.scaleQuantile()
                         .domain([minDilation,maxDilation])
-                        .range(colorCodes);
+                        .range(colorCodes);*/
+
+        colorScale = d3.scaleLinear()
+                        .domain([minDilation, (minDilation+maxDilation)/2, maxDilation])
+                        .range(["#2c7bb6", "#ffff8c", "#d7191c"])
+                        .interpolate(d3.interpolateHcl);
+
+        var maxTime = d3.max(data, function(d) { return d.time});
+        var minTime = d3.min(data, function(d) { return d.time});
+        //console.log("maxTime "+maxTime + " minTime "+minTime);
+
+        timeScale = d3.scaleLinear()
+                        .domain([minTime, maxTime])
+                        .range([0, 10]);
     }
 
     //draws circle points
@@ -107,7 +120,6 @@
                 .style("z-index", "10")
                 .style("visibility", "hidden")
                 .text("");
-
               
             svg.selectAll("circle")
                 .data(data)
@@ -119,6 +131,7 @@
                         return linearScaleY(d.y);
                     })
                 .attr("r", function(d){
+                    
                     return linearScaleDuration(d.duration);
                 })
                 .attr("fill", function(d){
@@ -130,7 +143,7 @@
                                 .attr("fill", "grey")
                                 .style("opacity", 1.0);
                                 tooltip.style("visibility", "visible");
-                                tooltip.text("Fixation Duration(ms): " + d.duration + ", " + "Pupil Size: " + d.avg_dilation);
+                                tooltip.text("Fixation Duration: " + d.duration + ",\n " + "Timestamp: " + d.time + ", Pupil Size: " + d.avg_dilation);
                     })
                 .on("mousemove", function(d, i) {
                         return tooltip.style("top",
@@ -145,10 +158,13 @@
                         .style("opacity", 1.0);
                         tooltip.style("visibility", "hidden");
                     })
-                .transition().delay(function(d,i){
-                    return d.duration*i
+                .transition()
+                .delay(function(d, i){
+                    return timeScale(i*d.time);
                 })
                 .attr("opacity", 1);
+
+
     }
     
 
@@ -206,15 +222,22 @@
             <div class="col-md-8 border border-primary">
                 
                <div class="" id="data" >
-                   
+                   <!--SVG is added here-->
                </div>
             </div>
 
             <!-- Side Panel for duration, pupil size and extra information-->
             <div class="col-md-4 border border-primary pt-4">
-                <div class="border border-primary" style="height: 35vh">Extra Information</div>
-                <div class="border border-primary" style="height: 15vh">Duration</div>
-                <div class="border border-primary" style="height: 15vh">Pupil Size</div>
+                <div class="border border-primary" style="height: 35vh; padding: 5px 0 0 5px; ">
+                    <h5>Extra Information</h5><p>Show Tooltip Here Intead of on the plot itself
+                </div>
+
+                <div class="border border-primary" style="height: 15vh; padding: 5px 0 0 5px; ">
+                    <h5>Duration</h5>
+                </div>
+                <div class="border border-primary" style="height: 15vh; padding: 5px 0 0 5px; ">
+                    <h5>Pupil Size</h5>
+                </div>
             </div>
         </div>
 
