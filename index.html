@@ -13,13 +13,14 @@
     document.addEventListener('DOMContentLoaded', function(){
         
         //setting global vars and drawing csv
-        svgDiv = document.getElementById("data");
-        svgHeight = svgDiv.offsetHeight;
+        svgDiv = document.getElementById("svgDiv");
         svgWidth = svgDiv.offsetWidth;
-        svg = d3.select("#data")
+        svgHeight = svgDiv.offsetHeight;
+
+        svg = d3.select("#svgDiv")
             .append("svg")
             .attr("width", svgWidth)
-            .attr("height", '406')
+            .attr("height", svgHeight)
             .attr("id", "drawnSvg");
 
 
@@ -66,6 +67,8 @@
     //sets the scales for x, y coordinates, duration and avg_dilation
     function setScales(data){
 
+        //duration used for circle size, dilation used for color
+
         var xMax = d3.max(data, function(d) { return d.x; });
         var xMin = d3.min(data, function(d) { return d.x; });
         //console.log("xMax "+xMax + " xMin "+xMin);
@@ -78,16 +81,19 @@
         var minDilation = d3.min(data, function(d) { return d.avg_dilation; });
         //console.log("maxDilation "+maxDilation + " minDilation "+minDilation);
 
+        var maxDuration = d3.max(data, function(d) { return d.duration; });
+        var minDuration = d3.min(data, function(d) { return d.duration; });
+
         linearScaleX = d3.scaleLinear()
                         .domain([xMin, xMax])
                         .range([0 + 20,svgWidth-50]);
 
         linearScaleY = d3.scaleLinear()
-                        .domain([0, 1220])
-                        .range([0 + 20,400]);
+                        .domain([yMin, yMax])
+                        .range([0 + 20,svgHeight-50]);
 
         linearScaleDuration = d3.scaleLinear()
-                        .domain([yMin, yMax])
+                        .domain([minDuration, maxDuration])
                         .range([0,10]);
 
         //var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
@@ -160,6 +166,7 @@
                     })
                 .transition()
                 .delay(function(d, i){
+                    console.log(timeScale(i*d.time))
                     return timeScale(i*d.time);
                 })
                 .attr("opacity", 1);
@@ -219,11 +226,11 @@
 
         <div class="container-fluid row" style="height: 75vh">
             <!-- Visualization -->
-            <div class="col-md-8 border border-primary">
+            <div class="col-md-8 border border-primary" id="svgDiv">
                 
-               <div class="" id="data" >
+               
                    <!--SVG is added here-->
-               </div>
+              
             </div>
 
             <!-- Side Panel for duration, pupil size and extra information-->
