@@ -51,13 +51,13 @@
             </div>
             <!-- Time slider -->
             <div id="time-div" class="slider-container pt-2">
-                <p id="timeLabel" for="TimeRange" class="m-0">time</p>
-                <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' max='100' value='10'>
+                <p id="timeLabel" for="timeRange" class="m-0">value</p>
+                <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' value='60'>
             </div>
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
-        <div id="info-div" class="col-md-3 p-3">
+        <div id="side-div" class="col-md-3 p-3">
             <!-- Info Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
@@ -70,16 +70,33 @@
                 <div class="row p-0 m-0">
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
                         <h6>Fixation Duration</h6>
-                        <div id="legend-duration"></div>
+                        <div id="legend-duration" class="slider-container">
+                            <input type="range" id="durationSlider" class="slider-legend"
+                                min='0' max='2' value='0' step='0.2'
+                                oninput="filterByDuration(this.value)">
+                            <p class="m-0">value</p>
+                        </div>
                     </div>
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
                         <h6>Pupil Dilation</h6>
-                        <div id="legend-dilation"></div>
+                        <div id="legend-pupil" class="slider-container">
+                            <input type="range" id="pupilSlider" class="slider-legend"
+                                min='0' max='1' value='0' step='0.2'
+                                oninput="filterByPupil(this.value)">
+                            <p class="m-0">value</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+    </div>
+    <div class="container-fluid row">
+        <div id="info-div" class="col text-right">
+            <!-- <b>Info</b><br> -->
+            CECS450 Data Visualzation project<br>
+            Supported browsers: Chrome, Safari
+        </div>
     </div>
 
 

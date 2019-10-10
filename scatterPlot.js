@@ -3,10 +3,21 @@ var file, mergedData;
 var xScale, yScale, rScale, colorScale, timeScale;
 var svg, svgDiv, svgHeight, svgWidth;
 
+//sliders
 var timeSlider = d3.select('#timeRange');
 var timeLabel = d3.select('#timeLabel');
 function timeUpdate(val) {
-    timeLabel.text(val);
+    timeLabel.text(val+'s');
+}
+var durationSlider = d3.select('#durationSlider');
+var durationLabel = d3.select('#legend-duration').select('p');
+function filterByDuration(val) {
+    durationLabel.text(val);
+}
+var pupilSlider = d3.select('#pupilSlider');
+var pupilLabel = d3.select('#legend-pupil').select('p');
+function filterByPupil(val) {
+    pupilLabel.text(val);
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -67,7 +78,7 @@ function checkRadio(){
 function setScales(data){
     const xValue = d => d.x;
     const yValue = d => d.y;
-    const durationValue = d => d.duration;      // plot size
+    const durationValue = d => d.duration;   // plot size
     const pupilValue = d => d.avg_dilation;  // plot color
     const timeValue = d => d.time;
 
@@ -110,7 +121,7 @@ function setScales(data){
         .range([0, 10])
         .nice();
         
-    timeSlider.max = timeMax;
+    timeSlider.attr('max',timeMax/1000);    //set time slider range
 }
 
 // Draws circle points
@@ -133,8 +144,8 @@ function drawCircles(data){
         .attr("fill", d => colorScale(d.avg_dilation))
         .attr("visibility","hidden")
         .on('mouseover', function(d, i) {
-            const msg = "<b>duration</b> " + d.duration + "ms <br>"
-                      + "<b>time</b> " + (d.time/1000).toFixed(2) + "s <br>"
+            const msg = "<b>time</b> " + (d.time/1000).toFixed(2) + "s <br>"
+                      + "<b>duration</b> " + d.duration + "ms <br>"
                       + "<b>dilation</b> " + d.avg_dilation.toFixed(2) + "mm";
             tooltip.html(msg);
             tooltip.style("visibility", "visible");
@@ -151,7 +162,9 @@ function drawCircles(data){
         })
         .transition()
         .delay(function(d, i){
-            // console.log(timeScale(i*d.time));
+            // console.log(d.time/1000);
+            // timeSlider.attr('value',d.time/1000);
+            // timeUpdate(d.time/1000);
             return timeScale(i*d.time);
         })
         .attr("visibility", "visible");
