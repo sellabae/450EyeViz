@@ -1,0 +1,80 @@
+/* to check the layout */
+div {
+    border: 0.5px solid orange;
+}
+
+
+/* scatter plot */
+#svgDiv circle {
+    /* stroke: white;
+    stroke-width: 0.1px; */
+}
+#svgDiv circle:hover {
+    stroke: white;
+    stroke-width: 2px;
+    opacity: 1;
+}
+.tooltipDiv{
+    background-color: lightgray;
+    border-radius: 3px;
+    /* border: 1px solid #FCEC02; */
+    font-size: 0.8em;
+}
+
+
+/* slider */
+.slider-container{
+    width: 100%;
+}
+.slider{
+    width: 100%;
+    height: 10px;
+    border-radius: 2px;
+    background: #DDD;
+    outline: none;
+    opacity: 0.8;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    -webkit-appearance: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+.slider:hover {
+    opacity: 1;
+}
+.slider::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    /* color: #08F; */
+    transition: box-shadow 0.2s ease-in-out;
+}
+/* slider thumb */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 5px;
+    height: 10px;
+    border-radius: 2px;
+    background: white;
+    cursor: pointer;
+    box-shadow: -500px 0 0 500px #08F, inset 0 0 0 40px #08F;
+}
+.slider::-moz-range-thumb {
+    width: 5px;
+    height: 10px;
+    border-radius: 2px;
+    background: white;
+    border: 1px solid #DDD;
+    cursor: pointer;
+}
+.slider::-moz-range-progress { 
+    background-color: #08F;
+}
+.slider::-moz-range-track {
+    background-color: #DDD;
+}
+.slider::-ms-fill-lower { 
+    background-color: #08F;
+}
+.slider::-ms-fill-upper {
+    background-color: #DDD;
+}
