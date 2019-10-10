@@ -1,7 +1,7 @@
 /* to check the layout */
-div {
+/* div {
     border: 0.5px solid orange;
-}
+} */
 
 
 /* scatter plot */
@@ -11,7 +11,7 @@ div {
 }
 #svgDiv circle:hover {
     stroke: white;
-    stroke-width: 2px;
+    stroke-width: 1px;
     opacity: 1;
 }
 .tooltipDiv{
@@ -66,15 +66,21 @@ div {
     border: 1px solid #DDD;
     cursor: pointer;
 }
-.slider::-moz-range-progress { 
+.slider::-moz-range-progress { /* FireFox */
     background-color: #08F;
 }
 .slider::-moz-range-track {
     background-color: #DDD;
 }
-.slider::-ms-fill-lower { 
+.slider::-ms-fill-lower { /* IE */
     background-color: #08F;
 }
 .slider::-ms-fill-upper {
     background-color: #DDD;
+}
+
+
+/* side panel */
+#info-div p {
+    font-size: 0.9em;
 }

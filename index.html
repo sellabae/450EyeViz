@@ -24,8 +24,7 @@
     <div class="container-fluid row" style="height: 10vh">
         <!-- Title -->
         <div class="col-md-8 pt-3">
-            <h2>
-                Participant
+            <h2>Participant
                 <span id="participantId">7</span>
                 <small class="text-muted">eye-tracking data</small>
             </h2>
@@ -45,7 +44,7 @@
 
     <div class="container-fluid row">
         <!-- Visualization -->
-        <div id="viz-div" class="col-md-8">
+        <div id="viz-div" class="col-md-8 col-sm-12">
             <div id="svgDiv" class="max-width" style="height:75vh">
                 
                 <!--SVG is added here-->
@@ -61,19 +60,23 @@
 
         <!-- Side Panel for duration, pupil size and extra information-->
         <div id="info-div" class="col-md-4 p-3">
-            <div class="h-50 pt-5 pb-3">
+            <div class="h-50 pb-3">
                 <h6>Details</h6>
                 <div id="details">
                     <p>Show Tooltip Here Intead of on the plot itself</p>
                 </div>
             </div>
-            <div class="h-25 pb-3">
-                <h6>Fixation Duration</h6>
-                <div id="legend-duration"></div>
-            </div>
-            <div class="h-25 pb-3">
-                <h6>Pupil Dilation</h6>
-                <div id="legend-dilation"></div>
+            <div class="h-50">
+                <div class="row p-0 m-0">
+                    <div class="p-0 pb-3 col-md-12 col-sm-6">
+                        <h6>Fixation Duration</h6>
+                        <div id="legend-duration"></div>
+                    </div>
+                    <div class="p-0 pb-3 col-md-12 col-sm-6">
+                        <h6>Pupil Dilation</h6>
+                        <div id="legend-dilation"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
