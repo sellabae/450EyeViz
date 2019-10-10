@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Eye-Tracking Data Visualization</title>
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
-    <!-- libraries -->
+    
+    <!-- Libraries -->
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -14,14 +12,16 @@
 
     <!-- JavaScript -->
     <script type="text/javascript" src="scatterPlot.js"></script>
+    
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- CSS -->
     <style type="text/css">
-        
         .tooltipDiv{
             background-color: #FFFBBE;
             border-radius: 5px;
             border: 1px solid #FCEC02;
         }
-
     </style>
 
 </head>
@@ -29,19 +29,19 @@
     <div class="container-fluid">
 
         <div class="container-fluid row" style="height: 10vh">
-            <!-- Participant, Tree and graph -->
-        <div class="col-md-8 border border-primary pt-3">
-            Participant: <span id="participantId">7</span>
-        </div>
-
+            <!-- Title -->
+            <div class="col-md-8 border border-primary pt-3">
+                Participant: <span id="participantId">7</span>
+            </div>
+            <!-- Data option: Tree or Graph -->
             <div class="col-md-4 border border-primary pt-3">
-                <div class="col-sm-3 form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="treeRadio" value="tree" checked="true" onclick="fetchCsvCallOthers()">
-                    <label class="form-check-label" for="inlineRadio1">Tree</label>
-                </div>
-                <div class="col-sm-2 form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="graphRadio" value="graph" onclick="fetchCsvCallOthers()">
-                    <label class="form-check-label" for="inlineRadio2">Graph</label>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-secondary">
+                        <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"  onclick="fetchCsvCallOthers()" checked> Tree
+                    </label>
+                    <label class="btn btn-secondary">
+                        <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()"> Graph
+                    </label>
                 </div>
             </div>
 
