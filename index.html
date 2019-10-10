@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Eye-Tracking Data Visualization</title>
     
-    <!-- Libraries -->
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <!-- jQuery and Ajax -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 
@@ -16,70 +17,67 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <!-- CSS -->
-    <style type="text/css">
-        .tooltipDiv{
-            background-color: #FFFBBE;
-            border-radius: 5px;
-            border: 1px solid #FCEC02;
-        }
-    </style>
-
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container-fluid">
 
-        <div class="container-fluid row" style="height: 10vh">
-            <!-- Title -->
-            <div class="col-md-8 border border-primary pt-3">
-                Participant: <span id="participantId">7</span>
+<body>
+    <div class="container-fluid row" style="height: 10vh">
+        <!-- Title -->
+        <div class="col-md-8 pt-3">
+            <h2>
+                Participant
+                <span id="participantId">7</span>
+                <small class="text-muted">eye-tracking data</small>
+            </h2>
+        </div>
+        <!-- Data option: Tree or Graph -->
+        <div class="col-md-4 pt-3">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary">
+                    <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"  onclick="fetchCsvCallOthers()" checked> Tree
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()"> Graph
+                </label>
             </div>
-            <!-- Data option: Tree or Graph -->
-            <div class="col-md-4 border border-primary pt-3">
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    <label class="btn btn-secondary">
-                        <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"  onclick="fetchCsvCallOthers()" checked> Tree
-                    </label>
-                    <label class="btn btn-secondary">
-                        <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()"> Graph
-                    </label>
+        </div>
+    </div>
+
+    <div class="container-fluid row">
+        <!-- Visualization -->
+        <div id="viz-div" class="col-md-8">
+            <div id="svgDiv" class="max-width" style="height:75vh">
+                
+                <!--SVG is added here-->
+            
+            </div>
+            <div id="time-div" class="max-width">
+                <label for="TimeRange" class="m-0">time</label>
+                <div class="slide-container">
+                    <input type="range" class="slider" id="timeRange" value=10>
                 </div>
             </div>
-
         </div>
 
-            <div class="container-fluid row" style="height: 75vh">
-                <!-- Visualization -->
-                <div id="svgDiv" class="col-md-8 border border-primary">
-                    
-                    <!--SVG is added here-->
-                
-                </div>
-
-                <!-- Side Panel for duration, pupil size and extra information-->
-                <div class="col-md-4 border border-primary pt-4">
-                    <div class="border border-primary" style="height: 35vh; padding: 5px 0 0 5px; ">
-                        <h5>Extra Information</h5><p>Show Tooltip Here Intead of on the plot itself
-                    </div>
-
-                    <div class="border border-primary" style="height: 15vh; padding: 5px 0 0 5px; ">
-                        <h5>Duration</h5>
-                    </div>
-                    <div class="border border-primary" style="height: 15vh; padding: 5px 0 0 5px; ">
-                        <h5>Pupil Size</h5>
-                    </div>
+        <!-- Side Panel for duration, pupil size and extra information-->
+        <div id="info-div" class="col-md-4 p-3">
+            <div class="h-50 pt-5 pb-3">
+                <h6>Details</h6>
+                <div id="details">
+                    <p>Show Tooltip Here Intead of on the plot itself</p>
                 </div>
             </div>
-
-            <!-- Time range slider -->
-            <div class="container-fluid row" style="height: 10vh">
-                <div class="col-md-12 border border-primary">
-                    <label for="TimeRange">Time range</label>
-                </div>
-                <div class="col-md-12 border border-primary">
-                    <input type="range" class="custom-range" id="timeRange">
-                </div>
+            <div class="h-25 pb-3">
+                <h6>Fixation Duration</h6>
+                <div id="legend-duration"></div>
             </div>
-
+            <div class="h-25 pb-3">
+                <h6>Pupil Dilation</h6>
+                <div id="legend-dilation"></div>
+            </div>
+        </div>
     </div>
+
 </body>
+
 </html>
