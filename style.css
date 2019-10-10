@@ -16,10 +16,12 @@
     opacity: 1;
 }
 .tooltipDiv{
-    background-color: lightgray;
+    opacity: 0.9;
+    background-color: #EEE;
     border-radius: 3px;
-    /* border: 1px solid #FCEC02; */
+    /* border: 1px solid #EEE; */
     font-size: 0.8em;
+    padding: 1px 6px 1px 6px;
 }
 
 

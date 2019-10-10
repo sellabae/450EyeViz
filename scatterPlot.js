@@ -79,19 +79,16 @@ function setScales(data){
 
     xScale = d3.scaleLinear()
         .domain([0, xMax])
-        .range([0 + 20,svgWidth-50])
+        .range([0+20, svgWidth-50])
         .nice();
-
     yScale = d3.scaleLinear()
         .domain([0, yMax])
-        .range([0 + 20,svgHeight-50])
+        .range([0+20, svgHeight-50])
         .nice();
-
     rScale = d3.scaleLinear()
         .domain([100, durationMax])
-        .range([3, 30])
+        .range([2, 24])
         .nice();
-
     //var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
     /*colorScale = d3.scaleQuantile()
                     .domain([pupilMin,pupilMax])
@@ -100,7 +97,6 @@ function setScales(data){
         .domain([pupilMin, (pupilMin+pupilMax)/2, pupilMax])
         .range(["#2c7bb6", "#ffff8c", "#d7191c"])
         .interpolate(d3.interpolateHcl);
-
     timeScale = d3.scaleLinear()
         .domain([timeMin, timeMax])
         .range([0, 10])
@@ -127,8 +123,8 @@ function drawCircles(data){
         .attr("fill", d => colorScale(d.avg_dilation))
         .attr("visibility","hidden")
         .on('mouseover', function(d, i) {
+            tooltip.text("duration: " + d.duration + ",\n " + "time: " + d.time + ", dilation: " + d.avg_dilation);
             tooltip.style("visibility", "visible");
-            tooltip.text("Fixation Duration: " + d.duration + ",\n " + "Timestamp: " + d.time + ", Pupil Size: " + d.avg_dilation);
         })
         .on("mousemove", function(d, i) {
             return tooltip.style("top",
