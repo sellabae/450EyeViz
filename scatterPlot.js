@@ -137,32 +137,24 @@ function drawCircles(data){
         .attr("fill", function(d){
             return colorScale(d.avg_dilation);
         })
-        .attr("opacity", 0)
+        .attr("visibility","hidden")
         .on('mouseover', function(d, i) {
-                d3.select(this)
-                        .attr("fill", "grey")
-                        .style("opacity", 1.0);
-                        tooltip.style("visibility", "visible");
-                        tooltip.text("Fixation Duration: " + d.duration + ",\n " + "Timestamp: " + d.time + ", Pupil Size: " + d.avg_dilation);
-            })
+            tooltip.style("visibility", "visible");
+            tooltip.text("Fixation Duration: " + d.duration + ",\n " + "Timestamp: " + d.time + ", Pupil Size: " + d.avg_dilation);
+        })
         .on("mousemove", function(d, i) {
-                return tooltip.style("top",
-                    (d3.event.pageY-10)+"px")
-                        .style("left",(d3.event.pageX+10)+"px");
-            })
+            return tooltip.style("top",
+                (d3.event.pageY-10)+"px")
+                    .style("left",(d3.event.pageX+10)+"px");
+        })
         .on('mouseout', function(d, i){
-                d3.select(this)
-                        .attr("fill", function(d){
-                            return colorScale(d.avg_dilation);
-                        })
-                .style("opacity", 1.0);
-                tooltip.style("visibility", "hidden");
-            })
+            tooltip.style("visibility", "hidden");
+        })
         .transition()
         .delay(function(d, i){
             console.log(timeScale(i*d.time))
             return timeScale(i*d.time);
         })
-        .attr("opacity", 1);
+        .attr("visibility", "visible");
 
 }
