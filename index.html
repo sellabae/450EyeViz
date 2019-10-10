@@ -11,13 +11,12 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 
-    <!-- JavaScript -->
-    <script type="text/javascript" src="scatterPlot.js"></script>
-    
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- JavaScript file added at the bottom of the body -->
 </head>
 
 <body>
@@ -43,29 +42,30 @@
     </div>
 
     <div class="container-fluid row">
-        <!-- Visualization -->
         <div id="viz-div" class="col-md-9 col-sm-12">
+            <!-- Visualization -->
             <div id="svgDiv" class="max-width" style="height:75vh">
                 
                 <!--SVG is added here-->
             
             </div>
-            <div id="time-div" class="max-width">
+            <!-- Time slider -->
+            <div id="time-div" class="slider-container pt-2">
                 <p id="timeLabel" for="TimeRange" class="m-0">time</p>
-                <div class="slider-container">
-                    <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' max='100' value='10'>
-                </div>
+                <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' max='100' value='10'>
             </div>
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
         <div id="info-div" class="col-md-3 p-3">
+            <!-- Info Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
                 <div id="details">
                     <p>Show Tooltip Here Intead of on the plot itself</p>
                 </div>
             </div>
+            <!-- Legends -->
             <div class="h-50">
                 <div class="row p-0 m-0">
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
@@ -82,6 +82,10 @@
 
     </div>
 
+
+    <!-- JavaScript -->
+    <script type="text/javascript" src="scatterPlot.js"></script>
+    
 </body>
 
 </html>
