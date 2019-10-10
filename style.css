@@ -110,6 +110,11 @@
     border-radius: 50%;
     background: #555;
 }
+.svg-legend {
+    width: 150px;
+    height: 50px;
+    background: #08F;
+}
 
 
 
