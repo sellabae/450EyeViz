@@ -1,7 +1,24 @@
 //global variables
 var file, mergedData;
-var xScale, yScale, rScale, colorScale, timeScale
-var svg, svgDiv, svgHeight, svgWidth
+var xScale, yScale, rScale, colorScale, timeScale;
+var svg, svgDiv, svgHeight, svgWidth;
+
+//sliders
+var timeSlider = d3.select('#timeRange');
+var timeLabel = d3.select('#timeLabel');
+function timeUpdate(val) {
+    timeLabel.text(val+'s');
+}
+var durationSlider = d3.select('#durationSlider');
+var durationLabel = d3.select('#legend-duration').select('p');
+function filterByDuration(val) {
+    durationLabel.text(val);
+}
+var pupilSlider = d3.select('#pupilSlider');
+var pupilLabel = d3.select('#legend-pupil').select('p');
+function filterByPupil(val) {
+    pupilLabel.text(val);
+}
 
 document.addEventListener('DOMContentLoaded', function(){
     
@@ -42,22 +59,26 @@ function fetchCsvCallOthers(){
         mergedData = data;
         setScales(mergedData);  
         drawCircles(mergedData);
+        // console.log('after drawCircles call');
     });
 }
 
-//checks which radio button is checked
+// Checks which radio button is checked
 function checkRadio(){
-    if(document.getElementById("treeRadio").checked)
+    if(document.getElementById("treeRadio").checked) {
         file = "./data_preprocessed/merged_tree.csv";
-    else
+        console.log('tree data');
+    } else {
         file = "./data_preprocessed/merged_graph.csv";
+        console.log('graph data');
+    }
 }
 
-//sets the scales for x, y coordinates, duration and avg_dilation
+// Sets the scales for x, y coordinates, duration and avg_dilation
 function setScales(data){
     const xValue = d => d.x;
     const yValue = d => d.y;
-    const durationValue = d => d.duration;      // plot size
+    const durationValue = d => d.duration;   // plot size
     const pupilValue = d => d.avg_dilation;  // plot color
     const timeValue = d => d.time;
 
@@ -87,23 +108,23 @@ function setScales(data){
         .nice();
     rScale = d3.scaleLinear()
         .domain([100, durationMax])
-        .range([2, 24])
+        .range([3, 23])
         .nice();
-    //var colorCodes = ["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"];
-    /*colorScale = d3.scaleQuantile()
-                    .domain([pupilMin,pupilMax])
-                    .range(colorCodes);*/
     colorScale = d3.scaleLinear()
-        .domain([pupilMin, (pupilMin+pupilMax)/2, pupilMax])
-        .range(["#2c7bb6", "#ffff8c", "#d7191c"])
+        // .domain([0, (pupilMin+pupilMax)/2, pupilMax])   //show the distribution as it is
+        // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
+        .domain([0, 0.3, 1])                            //set standard for fixed legend
+        .range(['#0066ff', '#d0ff00', '#f00000'])
         .interpolate(d3.interpolateHcl);
     timeScale = d3.scaleLinear()
         .domain([timeMin, timeMax])
         .range([0, 10])
         .nice();
+        
+    timeSlider.attr('max',timeMax/1000);    //set time slider range
 }
 
-//draws circle points
+// Draws circle points
 function drawCircles(data){
 
     var tooltip = d3.select("body")
@@ -114,17 +135,21 @@ function drawCircles(data){
         .style("visibility", "hidden")
         .text("");
         
-    svg.selectAll("circle")
-        .data(data)
-        .enter().append("circle")
+    var plots = svg.selectAll("circle")
+        .data(data);
+    plots.enter().append("circle")
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => rScale(d.duration))
         .attr("fill", d => colorScale(d.avg_dilation))
         .attr("visibility","hidden")
         .on('mouseover', function(d, i) {
-            tooltip.text("duration: " + d.duration + ",\n " + "time: " + d.time + ", dilation: " + d.avg_dilation);
+            const msg = "<b>time</b> " + (d.time/1000).toFixed(2) + "s <br>"
+                      + "<b>duration</b> " + d.duration + "ms <br>"
+                      + "<b>dilation</b> " + d.avg_dilation.toFixed(2) + "mm";
+            tooltip.html(msg);
             tooltip.style("visibility", "visible");
+            d3.select('#details').html(msg);
         })
         .on("mousemove", function(d, i) {
             return tooltip.style("top",
@@ -133,12 +158,20 @@ function drawCircles(data){
         })
         .on('mouseout', function(d, i){
             tooltip.style("visibility", "hidden");
+            d3.select('#details').html('');
         })
         .transition()
         .delay(function(d, i){
-            // console.log(timeScale(i*d.time));
+            // console.log(d.time/1000);
+            // timeSlider.attr('value',d.time/1000);
+            // timeUpdate(d.time/1000);
             return timeScale(i*d.time);
         })
         .attr("visibility", "visible");
+        // .transition().duration( (d,i) => {
+        //     return timeScale(i*d.duration);
+        // })
+        // .attr('r', rScale(d.duration));
 
+        // console.log('Drawing Done!');
 }

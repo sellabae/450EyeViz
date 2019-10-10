@@ -2,13 +2,17 @@
 /* div {
     border: 0.5px solid orange;
 } */
-
+.text-muted {
+    font-weight: lighter;
+}
 
 /* scatter plot */
+#svgDiv {
+    border: 1px solid #EEE;
+    border-radius: 3px;
+}
 #svgDiv circle {
-    /* stroke: white;
-    stroke-width: 0.2px; */
-    opacity: 0.7;
+    opacity: 0.8;
 }
 #svgDiv circle:hover {
     stroke: white;
@@ -20,14 +24,20 @@
     background-color: #EEE;
     border-radius: 3px;
     /* border: 1px solid #EEE; */
-    font-size: 0.8em;
+    font-size: 0.7em;
+    font-weight: lighter;
     padding: 1px 6px 1px 6px;
 }
 
 
 /* slider */
-.slider-container{
+.slider-container {
     width: 100%;
+}
+.slider-container p {
+    font-size: 0.9em;
+    color: gray;
+    font-weight: lighter;
 }
 .slider{
     width: 100%;
@@ -35,7 +45,7 @@
     border-radius: 2px;
     background: #DDD;
     outline: none;
-    opacity: 0.8;
+    opacity: 0.85;
     -webkit-transition: .2s;
     transition: opacity .2s;
     -webkit-appearance: none;
@@ -58,32 +68,60 @@
     height: 10px;
     border-radius: 2px;
     background: white;
-    cursor: pointer;
     box-shadow: -500px 0 0 500px #08F, inset 0 0 0 40px #08F;
 }
-.slider::-moz-range-thumb {
+.slider::-moz-range-thumb { /* FireFox */
     width: 5px;
     height: 10px;
     border-radius: 2px;
     background: white;
-    border: 1px solid #DDD;
-    cursor: pointer;
 }
-.slider::-moz-range-progress { /* FireFox */
+.slider::-moz-range-progress {
     background-color: #08F;
 }
 .slider::-moz-range-track {
     background-color: #DDD;
 }
-.slider::-ms-fill-lower { /* IE */
-    background-color: #08F;
+
+
+
+/* slider for legends */
+.slider-legend {
+    width: 150px;
+    height: 4px;
+    border-radius: 2px;
+    background: #555;
+    outline: none;
+    opacity: 0.85;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    -webkit-appearance: none;
+    /* overflow: hidden; */
+    cursor: pointer;
 }
-.slider::-ms-fill-upper {
-    background-color: #DDD;
+.slider-legend:hover {
+    opacity: 1;
 }
+.slider-legend::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #555;
+}
+
+
 
 
 /* side panel */
-#info-div p {
+#details {
     font-size: 0.9em;
+    font-weight: lighter;
+}
+
+#info-div {
+    font-size: 0.6em;
+    font-weight: lighter;
+    color: #BBB;
 }
