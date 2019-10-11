@@ -1,9 +1,15 @@
-/* to check the layout */
+/* to check layout */
 /* div {
     border: 0.5px solid orange;
 } */
-.text-muted {
-    font-weight: lighter;
+.dark-theme {
+    background: #222;
+    color: white;
+}
+
+.content {
+    max-width: 1000px;
+    margin: auto;
 }
 .row {
     margin: 0;
@@ -15,6 +21,9 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+.text-muted {
+    font-weight: lighter;
 }
 
 
@@ -30,7 +39,7 @@
     opacity: 1;
     stroke: white;
     stroke-width: 1.5px;
-    /* TODO: drop shadow not working.. why? */
+    /* NOTE: drop shadow not working.. why? */
     -webkit-filter: drop-shadow(0 0 0.75rem red);
     filter: drop-shadow(0 0 0.75rem red);  
 }

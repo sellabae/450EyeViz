@@ -21,16 +21,20 @@
 </head>
 
 <body>
-    <div class="container-fluid row">
+<div class="content layout-check">
+    <div class="container-fluid row pt-3 pb-2">
         <!-- Title -->
-        <div class="col-sm-9 pt-3 unselectable">
-            <p class="h2 sm-h3">Participant
+        <div class="col-sm-9 col-8 unselectable">
+            <span class="h2 m-0">
+                Participant
                 <span id="participantId">7</span>
-                <small class="text-muted">eye-tracking data</small>
-            </p>
+            </span>
+            <span class="h4 m-0 text-muted d-sm-inline d-block">
+                eye-tracking data
+            </span>
         </div>
         <!-- Data option: Tree or Graph -->
-        <div class="col-sm-3 pt-3">
+        <div class="col-sm-3 col-4 text-md-left text-right align-self-end">
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
                     <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"  onclick="fetchCsvCallOthers()" checked> Tree
@@ -69,7 +73,7 @@
             <!-- Legends -->
             <div class="h-50">
                 <div class="row p-0 m-0">
-                    <div class="col-md-12 col-sm-6 p-0 mb-5">
+                    <div class="col-md-12 col-6 p-0 mb-5">
                         <h6>Fixation Duration</h6>
                         <div id="legend-duration" class="legend-container">
                             <input type="range" id="durationSlider" class="legend-slider"
@@ -78,7 +82,7 @@
                             <svg id="svgDurationSlider" class="legend-svg"></svg>
                         </div>
                     </div>
-                    <div class="col-md-12 col-sm-6 p-0 mb-5">
+                    <div class="col-md-12 col-6 p-0 mb-5">
                         <h6>Pupil Dilation</h6>
                         <div id="legend-pupil" class="legend-container">
                             <input type="range" id="pupilSlider" class="legend-slider"
@@ -90,8 +94,8 @@
                 </div>
             </div>
         </div>
-
     </div>
+
     <div class="container-fluid row">
         <div id="info-div" class="col text-right unselectable">
             <!-- <b>Info</b><br> -->
@@ -100,6 +104,8 @@
         </div>
     </div>
 
+</div>
+<!-- end of the content -->
 
     <!-- JavaScript -->
     <script type="text/javascript" src="scatterPlot.js"></script>
