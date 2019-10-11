@@ -5,6 +5,9 @@
 .text-muted {
     font-weight: lighter;
 }
+.row {
+    margin: 0;
+}
 
 /* scatter plot */
 #svgDiv {
@@ -15,24 +18,29 @@
     opacity: 0.8;
 }
 #svgDiv circle:hover {
-    stroke: white;
-    stroke-width: 1px;
     opacity: 1;
+    stroke: white;
+    stroke-width: 1.5px;
+    /* TODO: drop shadow not working.. why? */
+    -webkit-filter: drop-shadow(0 0 0.75rem red);
+    filter: drop-shadow(0 0 0.75rem red);  
 }
 .tooltipDiv{
+    line-height: 1.2;
     opacity: 0.9;
     background-color: #EEE;
     border-radius: 3px;
     /* border: 1px solid #EEE; */
     font-size: 0.7em;
     font-weight: lighter;
-    padding: 1px 6px 1px 6px;
+    padding: 4px 6px 4px 6px;
 }
 
 
 /* slider */
 .slider-container {
     width: 100%;
+    line-height: 1;
 }
 .slider-container p {
     font-size: 0.9em;
@@ -105,10 +113,16 @@
 .slider-legend::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: #555;
+}
+.slider-legend::-webkit-slider-thumb:hover {
+    -webkit-transition: .3s;
+    transition: .3s;
+    width: 14px;
+    height: 14px;
 }
 .svg-legend {
     width: 150px;
@@ -121,6 +135,7 @@
 
 /* side panel */
 #details {
+    height: 30px;
     font-size: 0.9em;
     font-weight: lighter;
 }

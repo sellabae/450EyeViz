@@ -11,14 +11,9 @@ function timeUpdate(val) {
 }
 var durationSlider = d3.select('#durationSlider');
 var durationLabel = d3.select('#legend-duration').select('p');
-function filterByDuration(val) {
-    durationLabel.text(val);
-}
 var pupilSlider = d3.select('#pupilSlider');
 var pupilLabel = d3.select('#legend-pupil').select('p');
-function filterByPupil(val) {
-    pupilLabel.text(val);
-}
+
 
 document.addEventListener('DOMContentLoaded', function(){
     
@@ -135,8 +130,10 @@ function drawCircles(data){
         .style("visibility", "hidden")
         .text("");
         
+    // Join data to circles
     var plots = svg.selectAll("circle")
-        .data(data);
+        .data(data, function(d) { return d; }); //semantically join
+    // Add circles
     plots.enter().append("circle")
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
@@ -175,3 +172,47 @@ function drawCircles(data){
 
         // console.log('Drawing Done!');
 }
+
+
+// Filters plots by duration
+function filterByDuration(val)
+{
+    durationLabel.text(val);
+
+    var selected = +val*1000;
+    var inclusiveVal = 250;
+    var start = selected - inclusiveVal;
+    var end = selected + inclusiveVal;
+    console.log('filtering with fixation duration '+start+' ~ '+end+'ms');
+
+    svg.selectAll('circle')
+    // .transition().duration(500)      //it stops drawing
+    // .ease(d3.easeLinear)
+    .style('opacity', 0.05)
+    .filter(function(d) {
+        return (d.duration >= start) && (d.duration <= end);
+    })
+    .style('opacity', 0.9);
+
+}
+
+// Filters plots by pupil dilation
+function filterByPupil(val)
+{
+    pupilLabel.text(val);
+    
+    var selected = +val;
+    var inclusiveVal = 0.125;
+    var start = selected - inclusiveVal;
+    var end = selected + inclusiveVal;
+    console.log('filtering with pupil dilation '+start.toFixed(3)+' ~ '+end.toFixed(3)+'mm');
+
+    svg.selectAll('circle')
+    .style('opacity', 0.05)
+    .filter(function(d) {
+        return (d.avg_dilation >= start) && (d.avg_dilation <= end);
+    })
+    .style('opacity', 0.9);
+
+}
+
