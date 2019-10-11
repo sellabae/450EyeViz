@@ -8,6 +8,15 @@
 .row {
     margin: 0;
 }
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 
 /* scatter plot */
 #svgDiv {
@@ -37,7 +46,7 @@
 }
 
 
-/* slider */
+/* time slider */
 .slider-container {
     width: 100%;
     line-height: 1;
@@ -92,8 +101,7 @@
 }
 
 
-
-/* slider for legends */
+/* legends slider */
 .legend-container {
     width: 170px;
     height: 50px;
@@ -107,7 +115,7 @@
     left:50%;
     transform:translate(-50%, -50%);
     width: 130px;
-    height: 20px;
+    height: 30px;
     /* border-radius: 2px; */
     /* background: gray; */
     background: transparent;
@@ -144,7 +152,13 @@
     height: 100%;
     /* border: 1px solid #DDD; */
 }
-
+.legend-svg circle {
+    opacity: 0.6;
+}
+.legend-svg line {
+    stroke: black;
+    stroke-width: 0.5px;
+}
 
 
 

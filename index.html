@@ -22,7 +22,7 @@
 <body>
     <div class="container-fluid row">
         <!-- Title -->
-        <div class="col-sm-9 pt-3">
+        <div class="col-sm-9 pt-3 unselectable">
             <p class="h2 sm-h3">Participant
                 <span id="participantId">7</span>
                 <small class="text-muted">eye-tracking data</small>
@@ -50,14 +50,14 @@
             
             </div>
             <!-- Time slider -->
-            <div id="time-div" class="slider-container pt-2">
+            <div id="time-div" class="slider-container pt-2 unselectable">
                 <p id="timeLabel" for="timeRange" class="m-0">value</p>
                 <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' value='60'>
             </div>
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
-        <div id="side-div" class="col-md-3 p-3">
+        <div id="side-div" class="col-md-3 p-3 unselectable">
             <!-- Info Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
@@ -94,7 +94,7 @@
 
     </div>
     <div class="container-fluid row">
-        <div id="info-div" class="col text-right">
+        <div id="info-div" class="col text-right unselectable">
             <!-- <b>Info</b><br> -->
             CECS450 Data Visualzation project<br>
             Supported browsers: Chrome, Safari

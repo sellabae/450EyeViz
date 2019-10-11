@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', function(){
     // TODO: make svg in index.html and adjust size
     svg = d3.select("#svgDiv")
         .append("svg")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight)
+        .attr("width", '100%')
+        .attr("height", '100%')
         .attr("id", "drawnSvg");
 
     drawLegends();
@@ -236,13 +236,10 @@ function drawLegends(){
         .attr('cx', d => scaleX(d))
         .attr('cy', 25)
         .attr('r', d => scaleSize(d))
-        .style('fill', '#AAA')
-        .style('opacity', 0.5);
+        .style('fill', '#AAA');
     durationSvg.append('line')
         .attr('x1',25).attr('y1',25)
-        .attr('x2',145).attr('y2',25)
-        .style('stroke', 'black')
-        .style('stroke-width', '1px');
+        .attr('x2',145).attr('y2',25);
 
     const pupilSvg = d3.select('#svgPupilSlider');
     const pupilSteps = [0, 0.25, 0.5, 0.75, 1];
@@ -253,12 +250,9 @@ function drawLegends(){
         .attr('cx', d => scaleX(d))
         .attr('cy', 25)
         .attr('r', 16)
-        .style('fill', d => scaleColor(d))
-        .style('opacity', 0.5);
+        .style('fill', d => scaleColor(d));
     pupilSvg.append('line')
         .attr('x1',25).attr('y1',25)
-        .attr('x2',145).attr('y2',25)
-        .style('stroke', 'black')
-        .style('stroke-width', '1px');
+        .attr('x2',145).attr('y2',25);
 
 }
