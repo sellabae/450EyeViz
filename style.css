@@ -153,11 +153,20 @@
     /* border: 1px solid #DDD; */
 }
 .legend-svg circle {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 .legend-svg line {
     stroke: black;
-    stroke-width: 0.5px;
+    stroke-width: 0.4px;
+}
+.legend-svg .steps circle {
+    fill: black;
+    r: 2px;
+}
+.legend-svg text {
+    font-size: 0.7em;
+    font-weight: lighter;
+	text-anchor: middle;
 }
 
 

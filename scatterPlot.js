@@ -1,11 +1,13 @@
 //global variables
 var mergedData;
+//scales
 var xScale, yScale, timeScale;
 var rScale = d3.scaleLinear()
     .range([3,23]);
 var colorScale = d3.scaleLinear()
     .range(['#0066ff', '#d0ff00', '#f00000'])
     .interpolate(d3.interpolateHcl);;
+//svg
 var svg, svgDiv, svgHeight, svgWidth;
 
 //sliders
@@ -15,9 +17,9 @@ function timeUpdate(val) {
     timeLabel.text(val+'s');
 }
 var durationSlider = d3.select('#durationSlider');
-var durationLabel = d3.select('#durationLabel');
 var pupilSlider = d3.select('#pupilSlider');
-var pupilLabel = d3.select('#pupilLabel');
+
+
 
 // Initial document setup
 document.addEventListener('DOMContentLoaded', function(){
@@ -39,8 +41,8 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 // Fetches the csv, calls other functions
-function fetchCsvCallOthers(){
-
+function fetchCsvCallOthers()
+{
     var drawnSvg = document.getElementById("drawnSvg");
     //removing previously drawn circles
     if(drawnSvg != undefined) {
@@ -64,7 +66,8 @@ function fetchCsvCallOthers(){
 }
 
 // Returns file by checking which data set to load from radio buttons
-function dataSetToLoad(){
+function dataSetToLoad()
+{
     if(document.getElementById("treeRadio").checked) {
         console.log('tree data');
         return "./data_preprocessed/merged_tree.csv";
@@ -75,7 +78,8 @@ function dataSetToLoad(){
 }
 
 // Sets the scales for x, y coordinates, duration and avg_dilation
-function setScales(data){
+function setScales(data)
+{
     const xValue = d => d.x;
     const yValue = d => d.y;
     const durationValue = d => d.duration;   // plot size
@@ -119,8 +123,8 @@ function setScales(data){
 }
 
 // Draws circle points
-function drawCircles(data){
-
+function drawCircles(data)
+{
     var tooltip = d3.select("body")
         .append("div")
         .attr("class", "tooltipDiv")
@@ -176,13 +180,12 @@ function drawCircles(data){
 // Filters plots by duration
 function filterByDuration(val)
 {
-    durationLabel.text(val);
-
     var selected = +val*1000;
     var inclusiveVal = 250;
     var start = selected - inclusiveVal;
     var end = selected + inclusiveVal;
-    console.log('filtering with fixation duration '+start+' ~ '+end+'ms');
+    console.log('filtering with fixation duration '
+        +start+' ~ '+end+'ms');
 
     svg.selectAll('circle')
     // .transition().duration(500)  //it makes dynamic drawing stop
@@ -198,13 +201,12 @@ function filterByDuration(val)
 // Filters plots by pupil dilation
 function filterByPupil(val)
 {
-    pupilLabel.text(val);
-    
     var selected = +val;
     var inclusiveVal = 0.125;
     var start = selected - inclusiveVal;
     var end = selected + inclusiveVal;
-    console.log('filtering with pupil dilation '+start.toFixed(3)+' ~ '+end.toFixed(3)+'mm');
+    console.log('filtering with pupil dilation '
+        +start.toFixed(3)+' ~ '+end.toFixed(3)+'mm');
 
     svg.selectAll('circle')
     .style('opacity', 0.05)
@@ -222,37 +224,61 @@ function filterByPupil(val)
 // });
 
 // Draws svg under legend sliders
-function drawLegends(){
+function drawLegends()
+{
     console.log('drawing svg under legends...');
+    const sliderLength = 120;
+    const gOffset = { x:25, y:25 };
+    const scaleX = d3.scaleLinear().range([0, sliderLength]);
 
-    const scaleX = d3.scaleLinear().range([25, 145]);
-
-    const durationSvg = d3.select('#svgDurationSlider');
-    const durationSteps = [0, 0.5, 1, 1.5, 2];
+    // 1. Fixation Duration Legend
+    const durationG = d3.select('#svgDurationSlider').append('g')
+        .attr('transform',`translate(${gOffset.x},${gOffset.y})`);
+    const durationSteps = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+    const durationStepTexts = [0, 0.5, 1, 1.5, 2];
     scaleX.domain([0, 2]);
     const scaleSize = rScale.domain([0, 2]);
-    durationSvg.selectAll('circle')
+    //back circles
+    durationG.selectAll('circle')
         .data(durationSteps).enter().append('circle')
         .attr('cx', d => scaleX(d))
-        .attr('cy', 25)
-        .attr('r', d => scaleSize(d))
-        .style('fill', '#AAA');
-    durationSvg.append('line')
-        .attr('x1',25).attr('y1',25)
-        .attr('x2',145).attr('y2',25);
+        .attr('r', d => scaleSize(d))  //the size legend
+        .style('fill', '#CCC');
+    //lines for the slider
+    durationG.append('line').attr('x2',sliderLength);
+    durationG.insert('g').attr('class','steps')
+        .selectAll('circle')
+        .data(durationStepTexts).enter().append('circle')
+        .attr('cx', d=> scaleX(d));
+    durationG.select('.steps').selectAll('text')
+        .data([0,1,2]).enter().append('text')
+        .attr('x', d=> scaleX(d))
+        .attr('y', 18)  //how far the numbers away from line
+        .text(d => {return d;});
 
-    const pupilSvg = d3.select('#svgPupilSlider');
-    const pupilSteps = [0, 0.25, 0.5, 0.75, 1];
+    // 2. Pupil Dilation Legend
+    const pupilG = d3.select('#svgPupilSlider').append('g')
+        .attr('transform',`translate(${gOffset.x},${gOffset.y})`);
+    const pupilSteps = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+    const pupilStepTexts = [0, 0.25, 0.5, 0.75, 1];
     scaleX.domain([0, 1]);
-    scaleColor = colorScale.domain([0, 0.3, 1]);
-    pupilSvg.selectAll('circle')
+    const scaleColor = colorScale.domain([0, 0.3, 1]);
+    //back circles
+    pupilG.selectAll('circle')
         .data(pupilSteps).enter().append('circle')
         .attr('cx', d => scaleX(d))
-        .attr('cy', 25)
-        .attr('r', 16)
-        .style('fill', d => scaleColor(d));
-    pupilSvg.append('line')
-        .attr('x1',25).attr('y1',25)
-        .attr('x2',145).attr('y2',25);
+        .attr('r', 12)
+        .style('fill', d => scaleColor(d));  //the color legend
+    //lines for the slider
+    pupilG.append('line').attr('x2',sliderLength);
+    pupilG.insert('g').attr('class','steps')
+        .selectAll('circle')
+        .data(pupilStepTexts).enter().append('circle')
+        .attr('cx', d=> scaleX(d));
+    pupilG.select('.steps').selectAll('text')
+        .data([0,1]).enter().append('text')
+        .attr('x', d=> scaleX(d))
+        .attr('y', 24)  //how far the numbers away from line
+        .text(d => {return d;});
 
 }
