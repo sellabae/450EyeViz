@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Eye-Tracking Data Visualization</title>
+    <link id="favicon" rel="shortcut icon" href="assets/favicon.ico"/>
     
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -62,13 +63,13 @@
             <div class="h-50 pb-3">
                 <h6>Details</h6>
                 <div id="details">
-                    <p>Show Tooltip Here Intead of on the plot itself</p>
+                    <p>...</p>
                 </div>
             </div>
             <!-- Legends -->
             <div class="h-50">
                 <div class="row p-0 m-0">
-                    <div class="col-md-12 col-sm-6 p-0 pb-3">
+                    <div class="col-md-12 col-sm-6 p-0 mb-5">
                         <h6>Fixation Duration</h6>
                         <div id="legend-duration" class="legend-container">
                             <input type="range" id="durationSlider" class="legend-slider"
@@ -76,9 +77,8 @@
                                 oninput="filterByDuration(this.value)">
                             <svg id="svgDurationSlider" class="legend-svg"></svg>
                         </div>
-                        <p id="durationLabel" class="text-muted m-0">value</p>
                     </div>
-                    <div class="col-md-12 col-sm-6 p-0 pb-3">
+                    <div class="col-md-12 col-sm-6 p-0 mb-5">
                         <h6>Pupil Dilation</h6>
                         <div id="legend-pupil" class="legend-container">
                             <input type="range" id="pupilSlider" class="legend-slider"
@@ -86,7 +86,6 @@
                                 oninput="filterByPupil(this.value)">
                             <svg id="svgPupilSlider" class="legend-svg"></svg>
                         </div>
-                        <p id="pupilLabel" class="text-muted m-0">value</p>
                     </div>
                 </div>
             </div>

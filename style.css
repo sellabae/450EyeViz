@@ -105,6 +105,7 @@
 .legend-container {
     width: 170px;
     height: 50px;
+    margin-left: -12px;
     line-height: 1;
     /* border: 1px solid orange; */
     position: relative;
@@ -114,34 +115,24 @@
     top:50%;
     left:50%;
     transform:translate(-50%, -50%);
-    width: 130px;
+    width: 132px;
     height: 30px;
     /* border-radius: 2px; */
     /* background: gray; */
     background: transparent;
     outline: none;
-    /* opacity: 0.85; */
     -webkit-transition: .2s;
     transition: opacity .2s;
     -webkit-appearance: none;
     cursor: pointer;
 }
-/* .legend-slider:hover {
-    opacity: 1;
-} */
 .legend-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: #555;
-}
-.legend-slider::-webkit-slider-thumb:hover {
-    -webkit-transition: .3s;
-    transition: .3s;
-    width: 14px;
-    height: 14px;
 }
 .legend-svg {
     position: absolute;
@@ -153,11 +144,20 @@
     /* border: 1px solid #DDD; */
 }
 .legend-svg circle {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 .legend-svg line {
     stroke: black;
-    stroke-width: 0.5px;
+    stroke-width: 0.4px;
+}
+.legend-svg .steps circle {
+    fill: black;
+    r: 2px;
+}
+.legend-svg .steps text {
+    font-size: 0.7em;
+    font-weight: lighter;
+	text-anchor: middle;
 }
 
 
