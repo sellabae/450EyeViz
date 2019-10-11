@@ -94,23 +94,33 @@
 
 
 /* slider for legends */
-.slider-legend {
-    width: 150px;
-    height: 4px;
+.legend-container {
+    width: 180px;
+    height: 60px;
+    line-height: 1;
+    /* border: 1px solid orange; */
+    position: relative;
+}
+.legend-slider {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    width: 120px;
+    height: 2px;
     border-radius: 2px;
     background: #555;
     outline: none;
-    opacity: 0.85;
+    /* opacity: 0.85; */
     -webkit-transition: .2s;
     transition: opacity .2s;
     -webkit-appearance: none;
-    /* overflow: hidden; */
     cursor: pointer;
 }
-.slider-legend:hover {
+/* .legend-slider:hover {
     opacity: 1;
-}
-.slider-legend::-webkit-slider-thumb {
+} */
+.legend-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 10px;
@@ -118,16 +128,20 @@
     border-radius: 50%;
     background: #555;
 }
-.slider-legend::-webkit-slider-thumb:hover {
+.legend-slider::-webkit-slider-thumb:hover {
     -webkit-transition: .3s;
     transition: .3s;
     width: 14px;
     height: 14px;
 }
-.svg-legend {
-    width: 150px;
-    height: 50px;
-    background: #08F;
+.legend-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -10;
+    width: 100%;
+    height: 100%;
+    background: #EEE;
 }
 
 

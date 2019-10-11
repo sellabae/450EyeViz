@@ -70,23 +70,23 @@
                 <div class="row p-0 m-0">
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
                         <h6>Fixation Duration</h6>
-                        <div id="legend-duration" class="slider-container">
-                            <input type="range" id="durationSlider" class="slider-legend"
+                        <div id="legend-duration" class="legend-container">
+                            <input type="range" id="durationSlider" class="legend-slider"
                                 min='0' max='2' value='0' step='0.5'
                                 oninput="filterByDuration(this.value)">
-                            <svg id="svgUnderDurationSlider" class="svg-legend"></svg>
-                            <p class="m-0">value</p>
+                            <svg id="svgUnderDurationSlider" class="legend-svg"></svg>
                         </div>
+                        <p id="durationLabel" class="text-muted m-0">value</p>
                     </div>
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
                         <h6>Pupil Dilation</h6>
-                        <div id="legend-pupil" class="slider-container">
-                            <input type="range" id="pupilSlider" class="slider-legend"
+                        <div id="legend-pupil" class="legend-container">
+                            <input type="range" id="pupilSlider" class="legend-slider"
                                 min='0' max='1' value='0' step='0.25'
                                 oninput="filterByPupil(this.value)">
-                            <svg id="svgUnderDurationSlider" class="svg-legend"></svg>
-                            <p class="m-0">value</p>
+                            <svg id="svgUnderDurationSlider" class="legend-svg"></svg>
                         </div>
+                        <p id="pupilLabel" class="text-muted m-0">value</p>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 //global variables
-var file, mergedData;
+var mergedData;
 var xScale, yScale, rScale, colorScale, timeScale;
 var svg, svgDiv, svgHeight, svgWidth;
 
@@ -10,11 +10,11 @@ function timeUpdate(val) {
     timeLabel.text(val+'s');
 }
 var durationSlider = d3.select('#durationSlider');
-var durationLabel = d3.select('#legend-duration').select('p');
+var durationLabel = d3.select('#durationLabel');
 var pupilSlider = d3.select('#pupilSlider');
-var pupilLabel = d3.select('#legend-pupil').select('p');
+var pupilLabel = d3.select('#pupilLabel');
 
-
+// Initial document setup
 document.addEventListener('DOMContentLoaded', function(){
     
     //setting global vars and drawing csv
@@ -36,11 +36,10 @@ function fetchCsvCallOthers(){
 
     var drawnSvg = document.getElementById("drawnSvg");
     //removing previously drawn circles
-    if(drawnSvg != undefined)
-    d3.selectAll("circle").remove();
-
-    checkRadio();
-
+    if(drawnSvg != undefined) {
+        d3.selectAll("circle").remove();
+    }
+    var file = dataSetToLoad();
     d3.csv(file)
     .then(function(data){
         //converting all rows to int
@@ -54,18 +53,17 @@ function fetchCsvCallOthers(){
         mergedData = data;
         setScales(mergedData);  
         drawCircles(mergedData);
-        // console.log('after drawCircles call');
     });
 }
 
-// Checks which radio button is checked
-function checkRadio(){
+// Returns file by checking which data set to load from radio buttons
+function dataSetToLoad(){
     if(document.getElementById("treeRadio").checked) {
-        file = "./data_preprocessed/merged_tree.csv";
         console.log('tree data');
+        return "./data_preprocessed/merged_tree.csv";
     } else {
-        file = "./data_preprocessed/merged_graph.csv";
         console.log('graph data');
+        return "./data_preprocessed/merged_graph.csv";
     }
 }
 
@@ -173,7 +171,7 @@ function drawCircles(data){
         // console.log('Drawing Done!');
 }
 
-
+// TODO: Filter with a range of values
 // Filters plots by duration
 function filterByDuration(val)
 {
@@ -186,7 +184,7 @@ function filterByDuration(val)
     console.log('filtering with fixation duration '+start+' ~ '+end+'ms');
 
     svg.selectAll('circle')
-    // .transition().duration(500)      //it stops drawing
+    // .transition().duration(500)  //it makes dynamic drawing stop
     // .ease(d3.easeLinear)
     .style('opacity', 0.05)
     .filter(function(d) {
@@ -216,3 +214,8 @@ function filterByPupil(val)
 
 }
 
+// Removes filter effect when clicked on empty area
+// $(document).on('click', function() { 
+//     svg.selectAll('circle')
+//     .style('opacity', 0.8);
+// });
