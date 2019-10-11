@@ -255,6 +255,9 @@ function drawLegends()
         .attr('x', d=> scaleX(d))
         .attr('y', 18)  //how far the numbers away from line
         .text(d => {return d;});
+    durationG.select('.steps').append('text')
+        .attr('x', sliderLength+9).attr('y', 18)
+        .text('s');
 
     // 2. Pupil Dilation Legend
     const pupilG = d3.select('#svgPupilSlider').append('g')
@@ -267,7 +270,7 @@ function drawLegends()
     pupilG.selectAll('circle')
         .data(pupilSteps).enter().append('circle')
         .attr('cx', d => scaleX(d))
-        .attr('r', 12)
+        .attr('r', 14)
         .style('fill', d => scaleColor(d));  //the color legend
     //lines for the slider
     pupilG.append('line').attr('x2',sliderLength);
@@ -278,7 +281,10 @@ function drawLegends()
     pupilG.select('.steps').selectAll('text')
         .data([0,1]).enter().append('text')
         .attr('x', d=> scaleX(d))
-        .attr('y', 24)  //how far the numbers away from line
+        .attr('y', 25)  //how far the numbers away from line
         .text(d => {return d;});
+    pupilG.select('.steps').append('text')
+        .attr('x', sliderLength+15).attr('y', 25)
+        .text('mm');
 
 }
