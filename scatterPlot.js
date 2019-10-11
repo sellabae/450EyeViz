@@ -1,6 +1,11 @@
 //global variables
-var file, mergedData;
-var xScale, yScale, rScale, colorScale, timeScale;
+var mergedData;
+var xScale, yScale, timeScale;
+var rScale = d3.scaleLinear()
+    .range([3,23]);
+var colorScale = d3.scaleLinear()
+    .range(['#0066ff', '#d0ff00', '#f00000'])
+    .interpolate(d3.interpolateHcl);;
 var svg, svgDiv, svgHeight, svgWidth;
 
 //sliders
@@ -10,16 +15,11 @@ function timeUpdate(val) {
     timeLabel.text(val+'s');
 }
 var durationSlider = d3.select('#durationSlider');
-var durationLabel = d3.select('#legend-duration').select('p');
-function filterByDuration(val) {
-    durationLabel.text(val);
-}
+var durationLabel = d3.select('#durationLabel');
 var pupilSlider = d3.select('#pupilSlider');
-var pupilLabel = d3.select('#legend-pupil').select('p');
-function filterByPupil(val) {
-    pupilLabel.text(val);
-}
+var pupilLabel = d3.select('#pupilLabel');
 
+// Initial document setup
 document.addEventListener('DOMContentLoaded', function(){
     
     //setting global vars and drawing csv
@@ -27,12 +27,14 @@ document.addEventListener('DOMContentLoaded', function(){
     svgWidth = +svgDiv.offsetWidth;
     svgHeight = +svgDiv.offsetHeight;
 
+    // TODO: make svg in index.html and adjust size
     svg = d3.select("#svgDiv")
         .append("svg")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight)
+        .attr("width", '100%')
+        .attr("height", '100%')
         .attr("id", "drawnSvg");
 
+    drawLegends();
     fetchCsvCallOthers();
 });
 
@@ -41,11 +43,10 @@ function fetchCsvCallOthers(){
 
     var drawnSvg = document.getElementById("drawnSvg");
     //removing previously drawn circles
-    if(drawnSvg != undefined)
-    d3.selectAll("circle").remove();
-
-    checkRadio();
-
+    if(drawnSvg != undefined) {
+        d3.select('#svgDiv').selectAll("circle").remove();
+    }
+    var file = dataSetToLoad();
     d3.csv(file)
     .then(function(data){
         //converting all rows to int
@@ -59,18 +60,17 @@ function fetchCsvCallOthers(){
         mergedData = data;
         setScales(mergedData);  
         drawCircles(mergedData);
-        // console.log('after drawCircles call');
     });
 }
 
-// Checks which radio button is checked
-function checkRadio(){
+// Returns file by checking which data set to load from radio buttons
+function dataSetToLoad(){
     if(document.getElementById("treeRadio").checked) {
-        file = "./data_preprocessed/merged_tree.csv";
         console.log('tree data');
+        return "./data_preprocessed/merged_tree.csv";
     } else {
-        file = "./data_preprocessed/merged_graph.csv";
         console.log('graph data');
+        return "./data_preprocessed/merged_graph.csv";
     }
 }
 
@@ -106,16 +106,10 @@ function setScales(data){
         .domain([0, yMax])
         .range([0+20, svgHeight-50])
         .nice();
-    rScale = d3.scaleLinear()
-        .domain([100, durationMax])
-        .range([3, 23])
-        .nice();
-    colorScale = d3.scaleLinear()
+    rScale.domain([100, durationMax]).nice();
+    colorScale.domain([0, 0.3, 1]);     //fixed with exagerated changes
         // .domain([0, (pupilMin+pupilMax)/2, pupilMax])   //show the distribution as it is
         // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
-        .domain([0, 0.3, 1])                            //set standard for fixed legend
-        .range(['#0066ff', '#d0ff00', '#f00000'])
-        .interpolate(d3.interpolateHcl);
     timeScale = d3.scaleLinear()
         .domain([timeMin, timeMax])
         .range([0, 10])
@@ -135,8 +129,10 @@ function drawCircles(data){
         .style("visibility", "hidden")
         .text("");
         
+    // Join data to circles
     var plots = svg.selectAll("circle")
-        .data(data);
+        .data(data, function(d) { return d; }); //semantically join
+    // Add circles
     plots.enter().append("circle")
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
@@ -174,4 +170,89 @@ function drawCircles(data){
         // .attr('r', rScale(d.duration));
 
         // console.log('Drawing Done!');
+}
+
+// TODO: Filter with a range of values
+// Filters plots by duration
+function filterByDuration(val)
+{
+    durationLabel.text(val);
+
+    var selected = +val*1000;
+    var inclusiveVal = 250;
+    var start = selected - inclusiveVal;
+    var end = selected + inclusiveVal;
+    console.log('filtering with fixation duration '+start+' ~ '+end+'ms');
+
+    svg.selectAll('circle')
+    // .transition().duration(500)  //it makes dynamic drawing stop
+    // .ease(d3.easeLinear)
+    .style('opacity', 0.05)
+    .filter(function(d) {
+        return (d.duration >= start) && (d.duration <= end);
+    })
+    .style('opacity', 0.9);
+
+}
+
+// Filters plots by pupil dilation
+function filterByPupil(val)
+{
+    pupilLabel.text(val);
+    
+    var selected = +val;
+    var inclusiveVal = 0.125;
+    var start = selected - inclusiveVal;
+    var end = selected + inclusiveVal;
+    console.log('filtering with pupil dilation '+start.toFixed(3)+' ~ '+end.toFixed(3)+'mm');
+
+    svg.selectAll('circle')
+    .style('opacity', 0.05)
+    .filter(function(d) {
+        return (d.avg_dilation >= start) && (d.avg_dilation <= end);
+    })
+    .style('opacity', 0.9);
+
+}
+
+// Removes filter effect when clicked on empty area
+// $(document).on('click', function() { 
+//     svg.selectAll('circle')
+//     .style('opacity', 0.8);
+// });
+
+// Draws svg under legend sliders
+function drawLegends(){
+    console.log('drawing svg under legends...');
+
+    const scaleX = d3.scaleLinear().range([25, 145]);
+
+    const durationSvg = d3.select('#svgDurationSlider');
+    const durationSteps = [0, 0.5, 1, 1.5, 2];
+    scaleX.domain([0, 2]);
+    const scaleSize = rScale.domain([0, 2]);
+    durationSvg.selectAll('circle')
+        .data(durationSteps).enter().append('circle')
+        .attr('cx', d => scaleX(d))
+        .attr('cy', 25)
+        .attr('r', d => scaleSize(d))
+        .style('fill', '#AAA');
+    durationSvg.append('line')
+        .attr('x1',25).attr('y1',25)
+        .attr('x2',145).attr('y2',25);
+
+    const pupilSvg = d3.select('#svgPupilSlider');
+    const pupilSteps = [0, 0.25, 0.5, 0.75, 1];
+    scaleX.domain([0, 1]);
+    scaleColor = colorScale.domain([0, 0.3, 1]);
+    pupilSvg.selectAll('circle')
+        .data(pupilSteps).enter().append('circle')
+        .attr('cx', d => scaleX(d))
+        .attr('cy', 25)
+        .attr('r', 16)
+        .style('fill', d => scaleColor(d));
+    pupilSvg.append('line')
+        .attr('x1',25).attr('y1',25)
+        .attr('x2',145).attr('y2',25);
+
 }

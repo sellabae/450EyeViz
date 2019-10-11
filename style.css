@@ -5,6 +5,18 @@
 .text-muted {
     font-weight: lighter;
 }
+.row {
+    margin: 0;
+}
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 
 /* scatter plot */
 #svgDiv {
@@ -15,24 +27,29 @@
     opacity: 0.8;
 }
 #svgDiv circle:hover {
-    stroke: white;
-    stroke-width: 1px;
     opacity: 1;
+    stroke: white;
+    stroke-width: 1.5px;
+    /* TODO: drop shadow not working.. why? */
+    -webkit-filter: drop-shadow(0 0 0.75rem red);
+    filter: drop-shadow(0 0 0.75rem red);  
 }
 .tooltipDiv{
+    line-height: 1.2;
     opacity: 0.9;
     background-color: #EEE;
     border-radius: 3px;
     /* border: 1px solid #EEE; */
     font-size: 0.7em;
     font-weight: lighter;
-    padding: 1px 6px 1px 6px;
+    padding: 4px 6px 4px 6px;
 }
 
 
-/* slider */
+/* time slider */
 .slider-container {
     width: 100%;
+    line-height: 1;
 }
 .slider-container p {
     font-size: 0.9em;
@@ -84,38 +101,70 @@
 }
 
 
-
-/* slider for legends */
-.slider-legend {
-    width: 150px;
-    height: 4px;
-    border-radius: 2px;
-    background: #555;
+/* legends slider */
+.legend-container {
+    width: 170px;
+    height: 50px;
+    line-height: 1;
+    /* border: 1px solid orange; */
+    position: relative;
+}
+.legend-slider {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    width: 130px;
+    height: 30px;
+    /* border-radius: 2px; */
+    /* background: gray; */
+    background: transparent;
     outline: none;
-    opacity: 0.85;
+    /* opacity: 0.85; */
     -webkit-transition: .2s;
     transition: opacity .2s;
     -webkit-appearance: none;
-    /* overflow: hidden; */
     cursor: pointer;
 }
-.slider-legend:hover {
+/* .legend-slider:hover {
     opacity: 1;
-}
-.slider-legend::-webkit-slider-thumb {
+} */
+.legend-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: #555;
 }
-
+.legend-slider::-webkit-slider-thumb:hover {
+    -webkit-transition: .3s;
+    transition: .3s;
+    width: 14px;
+    height: 14px;
+}
+.legend-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -10;
+    width: 100%;
+    height: 100%;
+    /* border: 1px solid #DDD; */
+}
+.legend-svg circle {
+    opacity: 0.6;
+}
+.legend-svg line {
+    stroke: black;
+    stroke-width: 0.5px;
+}
 
 
 
 /* side panel */
 #details {
+    height: 30px;
     font-size: 0.9em;
     font-weight: lighter;
 }

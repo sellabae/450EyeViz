@@ -22,7 +22,7 @@
 <body>
     <div class="container-fluid row">
         <!-- Title -->
-        <div class="col-sm-9 pt-3">
+        <div class="col-sm-9 pt-3 unselectable">
             <p class="h2 sm-h3">Participant
                 <span id="participantId">7</span>
                 <small class="text-muted">eye-tracking data</small>
@@ -50,14 +50,14 @@
             
             </div>
             <!-- Time slider -->
-            <div id="time-div" class="slider-container pt-2">
+            <div id="time-div" class="slider-container pt-2 unselectable">
                 <p id="timeLabel" for="timeRange" class="m-0">value</p>
                 <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' value='60'>
             </div>
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
-        <div id="side-div" class="col-md-3 p-3">
+        <div id="side-div" class="col-md-3 p-3 unselectable">
             <!-- Info Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
@@ -70,21 +70,23 @@
                 <div class="row p-0 m-0">
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
                         <h6>Fixation Duration</h6>
-                        <div id="legend-duration" class="slider-container">
-                            <input type="range" id="durationSlider" class="slider-legend"
-                                min='0' max='2' value='0' step='0.2'
+                        <div id="legend-duration" class="legend-container">
+                            <input type="range" id="durationSlider" class="legend-slider"
+                                min='0' max='2' value='0' step='0.5'
                                 oninput="filterByDuration(this.value)">
-                            <p class="m-0">value</p>
+                            <svg id="svgDurationSlider" class="legend-svg"></svg>
                         </div>
+                        <p id="durationLabel" class="text-muted m-0">value</p>
                     </div>
                     <div class="col-md-12 col-sm-6 p-0 pb-3">
                         <h6>Pupil Dilation</h6>
-                        <div id="legend-pupil" class="slider-container">
-                            <input type="range" id="pupilSlider" class="slider-legend"
-                                min='0' max='1' value='0' step='0.2'
+                        <div id="legend-pupil" class="legend-container">
+                            <input type="range" id="pupilSlider" class="legend-slider"
+                                min='0' max='1' value='0' step='0.25'
                                 oninput="filterByPupil(this.value)">
-                            <p class="m-0">value</p>
+                            <svg id="svgPupilSlider" class="legend-svg"></svg>
                         </div>
+                        <p id="pupilLabel" class="text-muted m-0">value</p>
                     </div>
                 </div>
             </div>
@@ -92,7 +94,7 @@
 
     </div>
     <div class="container-fluid row">
-        <div id="info-div" class="col text-right">
+        <div id="info-div" class="col text-right unselectable">
             <!-- <b>Info</b><br> -->
             CECS450 Data Visualzation project<br>
             Supported browsers: Chrome, Safari
