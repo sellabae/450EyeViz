@@ -1,6 +1,11 @@
 //global variables
 var mergedData;
-var xScale, yScale, rScale, colorScale, timeScale;
+var xScale, yScale, timeScale;
+var rScale = d3.scaleLinear()
+    .range([3,23]);
+var colorScale = d3.scaleLinear()
+    .range(['#0066ff', '#d0ff00', '#f00000'])
+    .interpolate(d3.interpolateHcl);;
 var svg, svgDiv, svgHeight, svgWidth;
 
 //sliders
@@ -22,12 +27,14 @@ document.addEventListener('DOMContentLoaded', function(){
     svgWidth = +svgDiv.offsetWidth;
     svgHeight = +svgDiv.offsetHeight;
 
+    // TODO: make svg in index.html and adjust size
     svg = d3.select("#svgDiv")
         .append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight)
         .attr("id", "drawnSvg");
 
+    drawLegends();
     fetchCsvCallOthers();
 });
 
@@ -37,7 +44,7 @@ function fetchCsvCallOthers(){
     var drawnSvg = document.getElementById("drawnSvg");
     //removing previously drawn circles
     if(drawnSvg != undefined) {
-        d3.selectAll("circle").remove();
+        d3.select('#svgDiv').selectAll("circle").remove();
     }
     var file = dataSetToLoad();
     d3.csv(file)
@@ -99,16 +106,10 @@ function setScales(data){
         .domain([0, yMax])
         .range([0+20, svgHeight-50])
         .nice();
-    rScale = d3.scaleLinear()
-        .domain([100, durationMax])
-        .range([3, 23])
-        .nice();
-    colorScale = d3.scaleLinear()
+    rScale.domain([100, durationMax]).nice();
+    colorScale.domain([0, 0.3, 1]);     //fixed with exagerated changes
         // .domain([0, (pupilMin+pupilMax)/2, pupilMax])   //show the distribution as it is
         // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
-        .domain([0, 0.3, 1])                            //set standard for fixed legend
-        .range(['#0066ff', '#d0ff00', '#f00000'])
-        .interpolate(d3.interpolateHcl);
     timeScale = d3.scaleLinear()
         .domain([timeMin, timeMax])
         .range([0, 10])
@@ -219,3 +220,45 @@ function filterByPupil(val)
 //     svg.selectAll('circle')
 //     .style('opacity', 0.8);
 // });
+
+// Draws svg under legend sliders
+function drawLegends(){
+    console.log('drawing svg under legends...');
+
+    const scaleX = d3.scaleLinear().range([25, 145]);
+
+    const durationSvg = d3.select('#svgDurationSlider');
+    const durationSteps = [0, 0.5, 1, 1.5, 2];
+    scaleX.domain([0, 2]);
+    const scaleSize = rScale.domain([0, 2]);
+    durationSvg.selectAll('circle')
+        .data(durationSteps).enter().append('circle')
+        .attr('cx', d => scaleX(d))
+        .attr('cy', 25)
+        .attr('r', d => scaleSize(d))
+        .style('fill', '#AAA')
+        .style('opacity', 0.5);
+    durationSvg.append('line')
+        .attr('x1',25).attr('y1',25)
+        .attr('x2',145).attr('y2',25)
+        .style('stroke', 'black')
+        .style('stroke-width', '1px');
+
+    const pupilSvg = d3.select('#svgPupilSlider');
+    const pupilSteps = [0, 0.25, 0.5, 0.75, 1];
+    scaleX.domain([0, 1]);
+    scaleColor = colorScale.domain([0, 0.3, 1]);
+    pupilSvg.selectAll('circle')
+        .data(pupilSteps).enter().append('circle')
+        .attr('cx', d => scaleX(d))
+        .attr('cy', 25)
+        .attr('r', 16)
+        .style('fill', d => scaleColor(d))
+        .style('opacity', 0.5);
+    pupilSvg.append('line')
+        .attr('x1',25).attr('y1',25)
+        .attr('x2',145).attr('y2',25)
+        .style('stroke', 'black')
+        .style('stroke-width', '1px');
+
+}
