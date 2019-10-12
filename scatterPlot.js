@@ -19,7 +19,9 @@ function timeUpdate(val) {
 var durationSlider = d3.select('#durationSlider');
 var pupilSlider = d3.select('#pupilSlider');
 
-var defaultOpacity = 0.8;
+var basicOpacity = 0.8;
+var highlightOpacity = 0.8;
+var mutedOpacity = 0.05;
 
 
 // Initial document setup
@@ -197,11 +199,11 @@ function filterByFeature(feature, val, step)
 
     // Make selected data stand out
     svg.selectAll('circle')
-    .style('opacity', 0.05)
+    .style('opacity', mutedOpacity)
     .filter(function(d) {
         return (d[feature] >= start) && (d[feature] <= end);
     })
-    .style('opacity', defaultOpacity);
+    .style('opacity', highlightOpacity);
     
 }
 
@@ -210,7 +212,7 @@ function clearAllFilters() {
     console.log('document double clicked!');
     // alert('document double clicked!');
     svg.selectAll('circle')
-    .style('opacity', defaultOpacity);
+    .style('opacity', basicOpacity);
 };
 
 // Draws legends with circles and scales under sliders
@@ -281,7 +283,47 @@ function drawLegends()
 
 }
 
-
+// Relocates plots aligned in the center line by time
 function relocateByTime(){
+    //NOTE: why not applied when redrawed with radio button?
+    console.log('relocating plots by time');
+
+    var g = d3.select('#circleGroup');
+    var plots = g.selectAll('circle');
+
+    const gap = 20;
+    g.append('line').attr('id','centerline')
+        .attr('x2', svgWidth - gap*2)
+        .attr('transform',`translate(20,${svgHeight/2})`)
+        .style('stroke','white').style('stroke-width','0.5px');
+
+    basicOpacity = 0.5;
+    var timelineScale = timeScale.range([gap, svgWidth-gap]);
+    plots.transition()
+        .delay(function(d,i){ return 0.5*i; }) 
+        .ease(d3.easeElastic).duration(2000)
+        .style('visibility','visible')
+        .style('opacity', basicOpacity)
+        .attr('cx', d => timelineScale(d.time))
+        .attr('cy', d => { return svgHeight/2;});
+
+}
+
+// Relocates plots back to its x,y coordinates
+function relocateByXY(){
+    console.log('relocating plots by x-y coordinate');
     
+    var g = d3.select('#circleGroup');
+    var plots = g.selectAll('circle');
+    g.select('#centerline').exit().remove();
+
+    basicOpacity = 0.8;
+    plots.transition()
+        .delay(function(d,i){ return 0.5*i; }) 
+        .ease(d3.easeExp).duration(2000)
+        .style('visibility','visible')
+        .style('opacity', basicOpacity)
+        .attr('cx', d => xScale(d.x))
+        .attr('cy', d => yScale(d.y));
+
 }
