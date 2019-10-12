@@ -1,5 +1,7 @@
 //global variables
 var mergedData;
+var xMin,xMax,yMin,yMax;
+var durationMin,durationMax,pupilMin,pupilMax,timeMin,timeMax;
 //scales
 var xScale, yScale, timeScale;
 var rScale = d3.scaleLinear()
@@ -19,10 +21,14 @@ function timeUpdate(val) {
 var durationSlider = d3.select('#durationSlider');
 var pupilSlider = d3.select('#pupilSlider');
 
+var basicOpacity = 0.8;
+var highlightOpacity = 0.8;
+var mutedOpacity = 0.01;
 
 
 // Initial document setup
 document.addEventListener('DOMContentLoaded', function(){
+    console.log('DOM content loaded. Initiating all setups.');
     
     //setting global vars and drawing csv
     svgDiv = document.getElementById("svgDiv");
@@ -35,18 +41,26 @@ document.addEventListener('DOMContentLoaded', function(){
         .attr("width", '100%')
         .attr("height", '100%')
         .attr("id", "drawnSvg");
+    svg.append('g').attr('id','plotG');
+    svg.append('g').attr('id','guideG');
 
     drawLegends();
     fetchCsvCallOthers();
 });
 
+document.addEventListener('dblclick', clearAllFilters);
+
+
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
 {
+    console.log('fetching csv data.');
+
     var drawnSvg = document.getElementById("drawnSvg");
     //removing previously drawn circles
     if(drawnSvg != undefined) {
-        d3.select('#svgDiv').selectAll("circle").remove();
+        d3.select('#svgDiv').select('#plotG').selectAll('*').remove();
+        d3.select('#svgDiv').select('#guideG').selectAll('*').remove();
     }
     var file = dataSetToLoad();
     d3.csv(file)
@@ -69,10 +83,10 @@ function fetchCsvCallOthers()
 function dataSetToLoad()
 {
     if(document.getElementById("treeRadio").checked) {
-        console.log('tree data');
+        console.log('tree data selected.');
         return "./data_preprocessed/merged_tree.csv";
     } else {
-        console.log('graph data');
+        console.log('graph data selected.');
         return "./data_preprocessed/merged_graph.csv";
     }
 }
@@ -80,26 +94,28 @@ function dataSetToLoad()
 // Sets the scales for x, y coordinates, duration and avg_dilation
 function setScales(data)
 {
+    console.log('setting scales.');
+
     const xValue = d => d.x;
     const yValue = d => d.y;
     const durationValue = d => d.duration;   // plot size
     const pupilValue = d => d.avg_dilation;  // plot color
     const timeValue = d => d.time;
 
-    var xMax = d3.max(data, xValue);
-    var xMin = d3.min(data, xValue);
+    xMax = d3.max(data, xValue);
+    xMin = d3.min(data, xValue);
     console.log('x '+xMin+' : '+xMax);
-    var yMax = d3.max(data, yValue);
-    var yMin = d3.min(data, yValue);
+    yMax = d3.max(data, yValue);
+    yMin = d3.min(data, yValue);
     console.log('y '+yMin+' : '+yMax);
-    var durationMax = d3.max(data, durationValue);
-    var durationMin = d3.min(data, durationValue);
+    durationMax = d3.max(data, durationValue);
+    durationMin = d3.min(data, durationValue);
     console.log('duration '+durationMin+' : '+durationMax);
-    var pupilMax = d3.max(data, pupilValue);
-    var pupilMin = d3.min(data, pupilValue);
+    pupilMax = d3.max(data, pupilValue);
+    pupilMin = d3.min(data, pupilValue);
     console.log('pupil '+pupilMin+' : '+pupilMax);
-    var timeMax = d3.max(data, timeValue);
-    var timeMin = d3.min(data, timeValue);
+    timeMax = d3.max(data, timeValue);
+    timeMin = d3.min(data, timeValue);
     console.log('time '+timeMin+' : '+timeMax);
 
     xScale = d3.scaleLinear()
@@ -125,6 +141,8 @@ function setScales(data)
 // Draws circle points
 function drawCircles(data)
 {
+    console.log('drawing circles.');
+
     var tooltip = d3.select("body")
         .append("div")
         .attr("class", "tooltipDiv")
@@ -133,9 +151,10 @@ function drawCircles(data)
         .style("visibility", "hidden")
         .text("");
         
-    // Join data to circles
-    var plots = svg.selectAll("circle")
-        .data(data, function(d) { return d; }); //semantically join
+    var plotG = svg.select('#plotG');
+    // Bind data to circles
+    var plots = plotG.selectAll("circle")
+        .data(data, function(d) { return d; }); //semantic binding
     // Add circles
     plots.enter().append("circle")
         .attr("cx", d => xScale(d.x))
@@ -176,59 +195,42 @@ function drawCircles(data)
         // console.log('Drawing Done!');
 }
 
-// TODO: Filter with a range of values
-// Filters plots by duration
-function filterByDuration(val)
+// TODO: Filter with a range of values (double thumbs on the slider)
+// Filters plots by feature
+function filterByFeature(feature, val, step)
 {
-    var selected = +val*1000;
-    var inclusiveVal = 250;
-    var start = selected - inclusiveVal;
-    var end = selected + inclusiveVal;
-    console.log('filtering with fixation duration '
-        +start+' ~ '+end+'ms');
-
-    svg.selectAll('circle')
-    // .transition().duration(500)  //it makes dynamic drawing stop
-    // .ease(d3.easeLinear)
-    .style('opacity', 0.05)
-    .filter(function(d) {
-        return (d.duration >= start) && (d.duration <= end);
-    })
-    .style('opacity', 0.9);
-
-}
-
-// Filters plots by pupil dilation
-function filterByPupil(val)
-{
+    if ( !(feature=='duration' || feature=='avg_dilation') ) {
+        console.log('not existing feature '+feature);
+        return;
+    }
     var selected = +val;
-    var inclusiveVal = 0.125;
+    var inclusiveVal = step/2;
     var start = selected - inclusiveVal;
     var end = selected + inclusiveVal;
-    console.log('filtering with pupil dilation '
-        +start.toFixed(3)+' ~ '+end.toFixed(3)+'mm');
+    console.log(`filtering by ${feature} ${start.toFixed(3)} ~ ${end.toFixed(3)}`);
 
-    svg.selectAll('circle')
-    .style('opacity', 0.05)
+    // Make selected data stand out
+    svg.select('#plotG').selectAll('circle')
+    .style('opacity', mutedOpacity)
     .filter(function(d) {
-        return (d.avg_dilation >= start) && (d.avg_dilation <= end);
+        return (d[feature] >= start) && (d[feature] <= end);
     })
-    .style('opacity', 0.9);
-
+    .style('opacity', highlightOpacity);
+    
 }
 
 // Removes filter effect when double clicked on document
-document.ondblclick = function() { 
-    console.log('document double clicked!');
+function clearAllFilters() { 
+    console.log('clearing all filters.');
     // alert('document double clicked!');
     svg.selectAll('circle')
-    .style('opacity', 0.8);
+    .style('opacity', basicOpacity);
 };
 
 // Draws legends with circles and scales under sliders
 function drawLegends()
 {
-    console.log('drawing svg under legends...');
+    console.log('drawing svg under legends.');
     const sliderLength = 120;
     const gOffset = { x:25, y:25 };
     const scaleX = d3.scaleLinear().range([0, sliderLength]);
@@ -291,4 +293,264 @@ function drawLegends()
         .attr('x', sliderLength+15).attr('y', 25)
         .text('mm');
 
+}
+
+
+// Relocates plots back to its x,y coordinates
+function relocateByXY()
+{
+    console.log('relocating plots by x-y coordinate.');
+    
+    var plotG = d3.select('#plotG');
+    var plots = plotG.selectAll('circle');
+
+    //redraw guides
+    const guideG = svg.select('#guideG');
+    guideG.selectAll('*').remove();    //remove all previously drawn guides
+    //NOTE: this can be imported from svg file
+    guideG.attr('transform','translate(5,5)');
+    var len = 50;
+    var xAxis = guideG.append('g').attr('transform',`translate(5, 0)`);
+    xAxis.append('line').attr('x2',len);
+    xAxis.append('line').attr('x2',-5).attr('y2',-3)
+        .attr('transform',`translate(${len}, 0)`);
+    xAxis.append('text').text('x')
+        .attr('transform',`translate(${len+8}, 4)`);
+    var yAxis = guideG.append('g').attr('transform',`translate(0, 5)`);
+    yAxis.append('line').attr('y2',len);
+    yAxis.append('line').attr('x2',-3).attr('y2',-5)
+        .attr('transform',`translate(0, ${len})`);
+    yAxis.append('text').text('y')
+        .attr('transform',`translate(0, ${len+12})`);
+    guideG.selectAll('line').classed('axis-line',true);
+    guideG.selectAll('text').classed('axis-stepText',true);
+
+    //relocate plots
+    // basicOpacity = 0.8;
+    plots.transition()
+        .delay(function(d,i){ return 0.5*i; }) 
+        .ease(d3.easeExp).duration(2000)
+        .style('visibility','visible')
+        // .style('opacity', basicOpacity)
+        .attr('cx', d => xScale(d.x))
+        .attr('cy', d => yScale(d.y));
+
+}
+
+// Relocates plots aligned in the center line by time
+function relocateByTime()
+{
+    //NOTE: why not applied when redrawed with radio button?
+    console.log('relocating plots by time.');
+
+    const plotG = d3.select('#plotG');
+    const plots = plotG.selectAll('circle');
+    
+    //redraw guides
+    const gap = 20; //gap from the svg border
+    const yOffset = svgHeight/2+50;
+    const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
+
+    const steps = [];
+    const oneMinuteInMS = 60000; //1minute = 60000ms
+    const maxMin = timeMax/oneMinuteInMS;
+    var i;
+    for(i=0; i<=maxMin; i+=1){
+        steps.push(i);
+    }
+    var largestMS = steps[steps.length-1] * oneMinuteInMS;
+
+    var scaleX = d3.scaleLinear()
+        .domain([0, timeMax])
+        .range([0, guide.width]);
+    var remainedX = scaleX(timeMax - largestMS);
+    console.log("remainedX: "+remainedX);
+    redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
+    svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
+
+
+    //relocate plots
+    // basicOpacity = 0.5;
+    var scaleX = timeScale.range([gap, svgWidth-gap]);
+    plots.transition()
+        .delay(function(d,i){ return 0.5*i; }) 
+        .ease(d3.easeElastic).duration(2000)
+        .style('visibility','visible')
+        // .style('opacity', basicOpacity)
+        .attr('cx', d => scaleX(d.time))
+        .attr('cy', d => { return svgHeight/2;});
+
+}
+
+// Relocates Plots with duration on x axis
+function relocateByDuration()
+{
+    console.log('relocating plots by duration.');
+
+    const steps = [0, 0.5, 1, 1.5, 2];
+    const guide = { width:400, margin:50, dotSize:2, color:'gray' };
+
+    var scaleX = d3.scaleLinear()
+        .domain([0, d3.max(steps)])
+        .range([guide.margin, guide.width - guide.margin]);
+
+    //redraw guides
+    redrawXAxis('Fixation Duration', 's', steps);
+
+    //relocate plots
+    var plotG = d3.select('#plotG');
+    var plots = plotG.selectAll('circle');
+    
+    var scaleY = d3.scaleLinear()
+        .domain([0,3000])
+        .range([svgHeight-70, 50]);
+
+    var xOffset = svgWidth/2-guide.width/2;
+
+    //Solution3. with scaleQuantize instead of using .filter()
+    var scaleQ = d3.scaleQuantize()
+        .domain([-250, 2250])
+        .range(steps);
+    plots.transition()
+        .delay(function(d,i){ return 0.5*i; }) 
+        .ease(d3.easeElastic).duration(2000)
+        .style('visibility','visible')
+        .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
+        .attr('cy', (d,i) => scaleY(i));
+    //TODO: Solve the problem of plots not placed from the bottom
+        
+    //TODO: Show count for each steps?
+
+
+
+    // //Solution1. filter() with ForEach loop
+    // //this only shows the plots of first step (steps[0]) why??
+    // var inclusiveVal = (steps[1]-steps[0])/2 *1000;
+    // var start, end;
+    // var filteredPlots;
+    // steps.forEach(function(step) {
+    //     step = step * 1000;
+    //     start = step - inclusiveVal;
+    //     end = step + inclusiveVal;
+    //     console.log(`moving dots for duration ${step}s (${start} ~ ${end}ms)`);
+        
+    //     filteredPlots = plots.filter(function(d) {
+    //         return (d.duration >= start) && (d.duration <= end);
+    //     });
+        
+    //     filteredPlots
+    //         // .transition()
+    //         // .delay(function(d,i){ return 0.5*i; }) 
+    //         // .ease(d3.easeExp).duration(2000)
+    //         .attr('visibility','visible')
+    //         .attr('cx', scaleX(step) + xOffset)
+    //         .attr('cy', (d,i) => scaleY(i));
+    // });
+
+
+    // //Solution2. filter() with manual repetition for each steps
+    // //this works exactly as desired, but ugly code..
+    // plots.filter(function(d) {
+    //     return (d.duration >= 0) && (d.duration <= 250);
+    // })
+    //     .attr('cx', scaleX(0) + xOffset)
+    //     .attr('cy', (d,i) => scaleY(i));
+    // plots.filter(function(d) {
+    //     return (d.duration > 250) && (d.duration <= 750);
+    // })
+    //     .attr('cx', scaleX(0.5) + xOffset)
+    //     .attr('cy', (d,i) => scaleY(i));
+    // plots.filter(function(d) {
+    //     return (d.duration > 750) && (d.duration <= 1250);
+    // })
+    //     .attr('cx', scaleX(1) + xOffset)
+    //     .attr('cy', (d,i) => scaleY(i));
+    // plots.filter(function(d) {
+    //     return (d.duration > 1250) && (d.duration <= 1750);
+    // })
+    //     .attr('cx', scaleX(1.5) + xOffset)
+    //     .attr('cy', (d,i) => scaleY(i));
+    // plots.filter(function(d) {
+    //     return (d.duration > 1750);
+    // })
+    //     .attr('cx', scaleX(2) + xOffset)
+    //     .attr('cy', (d,i) => scaleY(i));
+
+
+}
+
+// Relocates Plots with pupil dilation on x axis
+function relocateByPupilDilation()
+{
+    console.log('relocating plots by pupil dilation.');
+
+    const steps = [0, 0.25, 0.5, 0.75, 1];
+    const guide = { width:400, margin:50, dotSize:2, color:'gray' };
+
+    var scaleX = d3.scaleLinear()
+        .domain([0, d3.max(steps)])
+        .range([guide.margin, guide.width - guide.margin]);
+
+    //redraw guides
+    redrawXAxis('Pupil Dilation', 'mm', steps);
+
+    //relocate plots
+    var plotG = d3.select('#plotG');
+    var plots = plotG.selectAll('circle');
+    
+    var scaleY = d3.scaleLinear()
+        .domain([0,3000])
+        .range([svgHeight-70, 50]);
+
+    var xOffset = svgWidth/2-guide.width/2;
+
+    //Solution3. with scaleQuantize instead of using .filter()
+    var scaleQ = d3.scaleQuantize()
+        .domain([-0.125, 1.125])
+        .range(steps);
+    plots.transition()
+        .delay(function(d,i){ return 0.5*i; }) 
+        .ease(d3.easeElastic).duration(2000)
+        .style('visibility','visible')
+        .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
+        .attr('cy', (d,i) => scaleY(i));
+    //TODO: Solve the problem of plots not placed from the bottom
+        
+    //TODO: Show count for each steps?
+    
+
+}
+
+// Helps relocateByDuration() and relocateByPupilDilation() to redraw guideG in svg
+function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight-55, margin=50)
+{
+    var scaleX = d3.scaleLinear()
+        .domain([0, d3.max(steps)])
+        .range([margin, width-margin]);
+    
+    //redraw guides
+    const guideG = svg.select('#guideG');
+    guideG.selectAll('*').remove();    //remove all previously drawn guides
+    guideG.attr('transform',`translate(${svgWidth/2-width/2},${yOffset})`);
+    //redraw guides
+    guideG.append('line')
+        .attr('x2', width)
+        .classed('axis-line', true);
+    guideG.selectAll('circle')
+            .data(steps)
+        .enter().append('circle')
+            .attr('cx', d => scaleX(d))
+            .classed('axis-stepDot', true);
+    guideG.selectAll('text')
+            .data(steps)
+        .enter().append('text')
+            .attr('x', d => scaleX(d))
+            .attr('y', 20)
+            .text(d => {return d;})
+            .classed('axis-stepText', true);
+    guideG.append('text')
+        .attr('x', width/2)
+        .attr('y', 40)
+        .text(label+' ('+unit+')')
+        .classed('axis-label', true);
 }

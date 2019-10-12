@@ -62,12 +62,21 @@
             <!-- Time slider -->
             <div id="time-div" class="slider-container pt-2 unselectable">
                 <p id="timeLabel" for="timeRange" class="m-0">value</p>
-                <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' value='60'>
+                <input type="range" id="timeRange" class="slider"
+                    oninput="timeUpdate(this.value)" min='0' value='60'>
             </div>
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
         <div id="side-div" class="col-md-3 px-0 pl-md-4 pt-4 unselectable">
+            <div class="text-center pb-3">
+                <div class="btn-group btn-group-sm mb-3">
+                    <button class="btn btn-outline-primary" onclick="relocateByXY()">x-y</button>
+                    <button class="btn btn-outline-primary" onclick="relocateByTime()">time</button>
+                    <button class="btn btn-outline-primary" onclick="relocateByDuration()">duration</button>
+                    <button class="btn btn-outline-primary" onclick="relocateByPupilDilation()">dilation</button>
+                </div>
+            </div>
             <!-- Info Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
@@ -76,25 +85,23 @@
                 </div>
             </div>
             <!-- Legends -->
-            <div class="h-50">
-                <div class="row p-0 m-0">
-                    <div class="col-md-12 col-6 p-0 mb-5 pr-3">
-                        <h6>Fixation Duration</h6>
-                        <div id="legend-duration" class="legend-container">
-                            <input type="range" id="durationSlider" class="legend-slider"
-                                min='0' max='2' value='0' step='0.5'
-                                oninput="filterByDuration(this.value)">
-                            <svg id="svgDurationSlider" class="legend-svg"></svg>
-                        </div>
+            <div class="row p-0 m-0">
+                <div class="col-md-12 col-6 p-0 mb-5 pr-3">
+                    <h6>Fixation Duration</h6>
+                    <div id="legend-duration" class="legend-container">
+                        <input type="range" id="durationSlider" class="legend-slider"
+                            min='0' max='2000' value='0' step='500'
+                            oninput="filterByFeature('duration',this.value,this.step)">
+                        <svg id="svgDurationSlider" class="legend-svg"></svg>
                     </div>
-                    <div class="col-md-12 col-6 p-0 mb-5">
-                        <h6>Pupil Dilation</h6>
-                        <div id="legend-pupil" class="legend-container">
-                            <input type="range" id="pupilSlider" class="legend-slider"
-                                min='0' max='1' value='0' step='0.25'
-                                oninput="filterByPupil(this.value)">
-                            <svg id="svgPupilSlider" class="legend-svg"></svg>
-                        </div>
+                </div>
+                <div class="col-md-12 col-6 p-0 mb-5">
+                    <h6>Pupil Dilation</h6>
+                    <div id="legend-pupil" class="legend-container">
+                        <input type="range" id="pupilSlider" class="legend-slider"
+                            min='0' max='1' value='0' step='0.25'
+                            oninput="filterByFeature('avg_dilation',this.value,this.step)">
+                        <svg id="svgPupilSlider" class="legend-svg"></svg>
                     </div>
                 </div>
             </div>

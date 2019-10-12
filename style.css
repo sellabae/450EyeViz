@@ -37,13 +37,13 @@
 
 /* scatter plot */
 #svgDiv {
-    border: 1px solid #EEE;
+    /* border: 1px solid #EEE; */
     border-radius: 3px;
 }
-#svgDiv circle {
+#svgDiv #plotG circle {
     opacity: 0.8;
 }
-#svgDiv circle:hover {
+#svgDiv #plotG circle:hover {
     opacity: 1;
     stroke: white;
     stroke-width: 1.5px;
@@ -181,7 +181,7 @@
 
 /* side panel */
 #details {
-    height: 30px;
+    height: 70px;
     font-size: 0.9em;
     font-weight: lighter;
 }
@@ -190,4 +190,28 @@
     font-size: 0.6em;
     font-weight: lighter;
     color: #BBB;
+}
+
+
+
+.axis-label {
+    color: #AAA;
+    font-weight: lighter;
+    text-anchor: middle;
+}
+.axis-line {
+    stroke: #AAA;
+    stroke-width: 1px;
+}
+.axis-stepDot {
+    r: 2px;
+    fill: #AAA;
+    stroke: #AAA;
+    stroke-width: 1px;
+}
+.axis-stepText {
+    color: #AAA;
+    font-size: 0.8em;
+    font-weight: lighter;
+	text-anchor: middle;
 }
