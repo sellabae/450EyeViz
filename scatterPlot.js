@@ -307,25 +307,23 @@ function relocateByXY()
     //redraw guides
     const guideG = svg.select('#guideG');
     guideG.selectAll('*').remove();    //remove all previously drawn guides
-    //TODO: draw x,y coordinate arrows
+    //NOTE: this can be imported from svg file
     guideG.attr('transform','translate(5,5)');
     var len = 50;
-    var xAxis = guideG.append('g');
+    var xAxis = guideG.append('g').attr('transform',`translate(5, 0)`);
     xAxis.append('line').attr('x2',len);
     xAxis.append('line').attr('x2',-5).attr('y2',-3)
         .attr('transform',`translate(${len}, 0)`);
     xAxis.append('text').text('x')
-        .attr('transform',`translate(${len+7}, 5)`);
-    var yAxis = guideG.append('g');
+        .attr('transform',`translate(${len+8}, 4)`);
+    var yAxis = guideG.append('g').attr('transform',`translate(0, 5)`);
     yAxis.append('line').attr('y2',len);
     yAxis.append('line').attr('x2',-3).attr('y2',-5)
         .attr('transform',`translate(0, ${len})`);
     yAxis.append('text').text('y')
-        .attr('transform',`translate(0, ${len+10})`);
+        .attr('transform',`translate(0, ${len+12})`);
     guideG.selectAll('line').classed('axis-line',true);
     guideG.selectAll('text').classed('axis-stepText',true);
-
-
 
     //relocate plots
     // basicOpacity = 0.8;
