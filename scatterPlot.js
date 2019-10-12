@@ -19,6 +19,7 @@ function timeUpdate(val) {
 var durationSlider = d3.select('#durationSlider');
 var pupilSlider = d3.select('#pupilSlider');
 
+var defaultOpacity = 0.8;
 
 
 // Initial document setup
@@ -39,6 +40,9 @@ document.addEventListener('DOMContentLoaded', function(){
     drawLegends();
     fetchCsvCallOthers();
 });
+
+document.addEventListener('dblclick', clearAllFilters);
+
 
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
@@ -133,8 +137,9 @@ function drawCircles(data)
         .style("visibility", "hidden")
         .text("");
         
+    var g = svg.append('g').attr('id','circleGroup');
     // Join data to circles
-    var plots = svg.selectAll("circle")
+    var plots = g.selectAll("circle")
         .data(data, function(d) { return d; }); //semantically join
     // Add circles
     plots.enter().append("circle")
@@ -176,53 +181,36 @@ function drawCircles(data)
         // console.log('Drawing Done!');
 }
 
-// TODO: Filter with a range of values
-// Filters plots by duration
-function filterByDuration(val)
+// TODO: Filter with a range of values (double thumbs on the slider)
+// Filters plots by feature
+function filterByFeature(feature, val, step)
 {
-    var selected = +val*1000;
-    var inclusiveVal = 250;
-    var start = selected - inclusiveVal;
-    var end = selected + inclusiveVal;
-    console.log('filtering with fixation duration '
-        +start+' ~ '+end+'ms');
-
-    svg.selectAll('circle')
-    // .transition().duration(500)  //it makes dynamic drawing stop
-    // .ease(d3.easeLinear)
-    .style('opacity', 0.05)
-    .filter(function(d) {
-        return (d.duration >= start) && (d.duration <= end);
-    })
-    .style('opacity', 0.9);
-
-}
-
-// Filters plots by pupil dilation
-function filterByPupil(val)
-{
+    if ( !(feature=='duration' || feature=='avg_dilation') ) {
+        console.log('not existing feature '+feature);
+        return;
+    }
     var selected = +val;
-    var inclusiveVal = 0.125;
+    var inclusiveVal = step/2;
     var start = selected - inclusiveVal;
     var end = selected + inclusiveVal;
-    console.log('filtering with pupil dilation '
-        +start.toFixed(3)+' ~ '+end.toFixed(3)+'mm');
+    console.log(`filtering by ${feature} ${start.toFixed(3)} ~ ${end.toFixed(3)}`);
 
+    // Make selected data stand out
     svg.selectAll('circle')
     .style('opacity', 0.05)
     .filter(function(d) {
-        return (d.avg_dilation >= start) && (d.avg_dilation <= end);
+        return (d[feature] >= start) && (d[feature] <= end);
     })
-    .style('opacity', 0.9);
-
+    .style('opacity', defaultOpacity);
+    
 }
 
 // Removes filter effect when double clicked on document
-document.ondblclick = function() { 
+function clearAllFilters() { 
     console.log('document double clicked!');
     // alert('document double clicked!');
     svg.selectAll('circle')
-    .style('opacity', 0.8);
+    .style('opacity', defaultOpacity);
 };
 
 // Draws legends with circles and scales under sliders
@@ -291,4 +279,9 @@ function drawLegends()
         .attr('x', sliderLength+15).attr('y', 25)
         .text('mm');
 
+}
+
+
+function relocateByTime(){
+    
 }

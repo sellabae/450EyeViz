@@ -62,7 +62,8 @@
             <!-- Time slider -->
             <div id="time-div" class="slider-container pt-2 unselectable">
                 <p id="timeLabel" for="timeRange" class="m-0">value</p>
-                <input type="range" id="timeRange" class="slider" oninput="timeUpdate(this.value)" min='0' value='60'>
+                <input type="range" id="timeRange" class="slider"
+                    oninput="timeUpdate(this.value)" min='0' value='60'>
             </div>
         </div>
 
@@ -82,8 +83,8 @@
                         <h6>Fixation Duration</h6>
                         <div id="legend-duration" class="legend-container">
                             <input type="range" id="durationSlider" class="legend-slider"
-                                min='0' max='2' value='0' step='0.5'
-                                oninput="filterByDuration(this.value)">
+                                min='0' max='2000' value='0' step='500'
+                                oninput="filterByFeature('duration',this.value,this.step)">
                             <svg id="svgDurationSlider" class="legend-svg"></svg>
                         </div>
                     </div>
@@ -92,7 +93,7 @@
                         <div id="legend-pupil" class="legend-container">
                             <input type="range" id="pupilSlider" class="legend-slider"
                                 min='0' max='1' value='0' step='0.25'
-                                oninput="filterByPupil(this.value)">
+                                oninput="filterByFeature('avg_dilation',this.value,this.step)">
                             <svg id="svgPupilSlider" class="legend-svg"></svg>
                         </div>
                     </div>
