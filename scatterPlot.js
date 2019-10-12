@@ -21,7 +21,7 @@ var pupilSlider = d3.select('#pupilSlider');
 
 var basicOpacity = 0.8;
 var highlightOpacity = 0.8;
-var mutedOpacity = 0.05;
+var mutedOpacity = 0.02;
 
 
 // Initial document setup
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function(){
         .attr("width", '100%')
         .attr("height", '100%')
         .attr("id", "drawnSvg");
+    svg.append('g').attr('id','circleGroup');
 
     drawLegends();
     fetchCsvCallOthers();
@@ -139,7 +140,7 @@ function drawCircles(data)
         .style("visibility", "hidden")
         .text("");
         
-    var g = svg.append('g').attr('id','circleGroup');
+    var g = svg.select('#circleGroup');
     // Join data to circles
     var plots = g.selectAll("circle")
         .data(data, function(d) { return d; }); //semantically join
@@ -289,13 +290,13 @@ function relocateByTime(){
     console.log('relocating plots by time');
 
     var g = d3.select('#circleGroup');
-    var plots = g.selectAll('circle');
+    var plots = svg.selectAll('circle');
 
     const gap = 20;
     g.append('line').attr('id','centerline')
         .attr('x2', svgWidth - gap*2)
         .attr('transform',`translate(20,${svgHeight/2})`)
-        .style('stroke','white').style('stroke-width','0.5px');
+        .style('stroke','white').style('stroke-width','1px');
 
     basicOpacity = 0.5;
     var timelineScale = timeScale.range([gap, svgWidth-gap]);
@@ -303,7 +304,7 @@ function relocateByTime(){
         .delay(function(d,i){ return 0.5*i; }) 
         .ease(d3.easeElastic).duration(2000)
         .style('visibility','visible')
-        .style('opacity', basicOpacity)
+        // .style('opacity', basicOpacity)
         .attr('cx', d => timelineScale(d.time))
         .attr('cy', d => { return svgHeight/2;});
 
@@ -315,14 +316,14 @@ function relocateByXY(){
     
     var g = d3.select('#circleGroup');
     var plots = g.selectAll('circle');
-    g.select('#centerline').exit().remove();
+    g.select('#centerline').remove();
 
     basicOpacity = 0.8;
     plots.transition()
         .delay(function(d,i){ return 0.5*i; }) 
         .ease(d3.easeExp).duration(2000)
         .style('visibility','visible')
-        .style('opacity', basicOpacity)
+        // .style('opacity', basicOpacity)
         .attr('cx', d => xScale(d.x))
         .attr('cy', d => yScale(d.y));
 
