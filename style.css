@@ -37,7 +37,7 @@
 
 /* scatter plot */
 #svgDiv {
-    border: 1px solid #EEE;
+    /* border: 1px solid #EEE; */
     border-radius: 3px;
 }
 #svgDiv #plotG circle {
@@ -194,15 +194,24 @@
 
 
 
-
-.axis-text {
+.axis-label {
+    color: #AAA;
+    font-weight: lighter;
+    text-anchor: middle;
+}
+.axis-line {
+    stroke: #AAA;
+    stroke-width: 1px;
+}
+.axis-stepDot {
+    r: 2px;
+    fill: #AAA;
+    stroke: #AAA;
+    stroke-width: 1px;
+}
+.axis-stepText {
     color: #AAA;
     font-size: 0.8em;
     font-weight: lighter;
 	text-anchor: middle;
-}
-.axis-line {
-    fill: #AAA;
-    stroke: #AAA;
-    stroke-width: 1px;
 }

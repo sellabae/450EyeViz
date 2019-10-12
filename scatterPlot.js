@@ -323,7 +323,7 @@ function relocateByXY()
     yAxis.append('text').text('y')
         .attr('transform',`translate(0, ${len+10})`);
     guideG.selectAll('line').classed('axis-line',true);
-    guideG.selectAll('text').classed('axis-text',true);
+    guideG.selectAll('text').classed('axis-stepText',true);
 
 
 
@@ -367,7 +367,7 @@ function relocateByTime()
         .range([0, guide.width]);
     var remainedX = scaleX(timeMax - largestMS);
     console.log("remainedX: "+remainedX);
-    redrawXAxisOnGuideG(steps, guide.width-remainedX, yOffset, guide.margin);
+    redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
     svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
 
 
@@ -397,7 +397,7 @@ function relocateByDuration()
         .range([guide.margin, guide.width - guide.margin]);
 
     //redraw guides
-    redrawXAxisOnGuideG(steps);
+    redrawXAxis('Fixation Duration', 's', steps);
 
     //relocate plots
     var plotG = d3.select('#plotG');
@@ -494,7 +494,7 @@ function relocateByPupilDilation()
         .range([guide.margin, guide.width - guide.margin]);
 
     //redraw guides
-    redrawXAxisOnGuideG(steps);
+    redrawXAxis('Pupil Dilation', 'mm', steps);
 
     //relocate plots
     var plotG = d3.select('#plotG');
@@ -524,7 +524,7 @@ function relocateByPupilDilation()
 }
 
 // Helps relocateByDuration() and relocateByPupilDilation() to redraw guideG in svg
-function redrawXAxisOnGuideG(steps, width=400, yOffset=svgHeight-50, margin=50, dotSize=2, color='gray')
+function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight-55, margin=50)
 {
     var scaleX = d3.scaleLinear()
         .domain([0, d3.max(steps)])
@@ -542,13 +542,17 @@ function redrawXAxisOnGuideG(steps, width=400, yOffset=svgHeight-50, margin=50, 
             .data(steps)
         .enter().append('circle')
             .attr('cx', d => scaleX(d))
-            .attr('r', dotSize)
-            .classed('axis-line', true);
+            .classed('axis-stepDot', true);
     guideG.selectAll('text')
             .data(steps)
         .enter().append('text')
             .attr('x', d => scaleX(d))
             .attr('y', 20)
             .text(d => {return d;})
-            .classed('axis-text', true);
+            .classed('axis-stepText', true);
+    guideG.append('text')
+        .attr('x', width/2)
+        .attr('y', 40)
+        .text(label+' ('+unit+')')
+        .classed('axis-label', true);
 }
