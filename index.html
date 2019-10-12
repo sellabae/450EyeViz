@@ -27,17 +27,17 @@
 <div class="content layout-check">
     <div class="container-fluid row align-items-end pt-3 pb-2">
         <!-- Title -->
-        <div class="col-md-9 col-sm-7 col-7 unselectable">
+        <div class="col-md-9 col-sm-9 col-7 px-0 unselectable">
             <span class="h2 m-0">
                 Participant
                 <span id="participantId">7</span>
             </span>
-            <span class="h4 m-0 text-muted d-md-inline d-sm-block d-block">
+            <span class="h4 m-0 text-muted d-md-inline d-sm-inline d-block">
                 eye-tracking data
             </span>
         </div>
         <!-- Data option: Tree or Graph -->
-        <div class="col-md-3 col-sm-5 col-5 text-md-left text-right">
+        <div class="col-md-3 col-sm-3 col-5 px-0 pl-md-4 text-md-left text-right">
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
                     <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off" onclick="fetchCsvCallOthers()" checked>
@@ -52,7 +52,7 @@
     </div>
 
     <div class="container-fluid row">
-        <div id="viz-div" class="col-md-9 col-sm-12">
+        <div id="viz-div" class="col-md-9 col-sm-12 px-0">
             <!-- Visualization -->
             <div id="svgDiv" class="max-width" style="height:75vh">
                 
@@ -67,7 +67,7 @@
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
-        <div id="side-div" class="col-md-3 p-3 unselectable">
+        <div id="side-div" class="col-md-3 px-0 pl-md-4 pt-4 unselectable">
             <!-- Info Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
@@ -78,7 +78,7 @@
             <!-- Legends -->
             <div class="h-50">
                 <div class="row p-0 m-0">
-                    <div class="col-md-12 col-6 p-0 mb-5">
+                    <div class="col-md-12 col-6 p-0 mb-5 pr-3">
                         <h6>Fixation Duration</h6>
                         <div id="legend-duration" class="legend-container">
                             <input type="range" id="durationSlider" class="legend-slider"
@@ -101,8 +101,8 @@
         </div>
     </div>
 
-    <div class="container-fluid row">
-        <div id="info-div" class="col text-right unselectable">
+    <div class="container-fluid row pt-4">
+        <div id="info-div" class="col px-0 text-right unselectable">
             <!-- <b>Info</b><br> -->
             CECS450 Data Visualzation project<br>
             Supported browsers: Chrome, Safari
