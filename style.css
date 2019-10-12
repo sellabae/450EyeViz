@@ -196,7 +196,13 @@
 
 
 .axis-text {
+    color: #AAA;
     font-size: 0.8em;
     font-weight: lighter;
 	text-anchor: middle;
+}
+.axis-line {
+    fill: #AAA;
+    stroke: #AAA;
+    stroke-width: 1px;
 }

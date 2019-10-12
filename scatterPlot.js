@@ -23,7 +23,7 @@ var pupilSlider = d3.select('#pupilSlider');
 
 var basicOpacity = 0.8;
 var highlightOpacity = 0.8;
-var mutedOpacity = 0.02;
+var mutedOpacity = 0.01;
 
 
 // Initial document setup
@@ -307,6 +307,25 @@ function relocateByXY()
     //redraw guides
     const guideG = svg.select('#guideG');
     guideG.selectAll('*').remove();    //remove all previously drawn guides
+    //TODO: draw x,y coordinate arrows
+    guideG.attr('transform','translate(5,5)');
+    var len = 50;
+    var xAxis = guideG.append('g');
+    xAxis.append('line').attr('x2',len);
+    xAxis.append('line').attr('x2',-5).attr('y2',-3)
+        .attr('transform',`translate(${len}, 0)`);
+    xAxis.append('text').text('x')
+        .attr('transform',`translate(${len+7}, 5)`);
+    var yAxis = guideG.append('g');
+    yAxis.append('line').attr('y2',len);
+    yAxis.append('line').attr('x2',-3).attr('y2',-5)
+        .attr('transform',`translate(0, ${len})`);
+    yAxis.append('text').text('y')
+        .attr('transform',`translate(0, ${len+10})`);
+    guideG.selectAll('line').classed('axis-line',true);
+    guideG.selectAll('text').classed('axis-text',true);
+
+
 
     //relocate plots
     // basicOpacity = 0.8;
@@ -332,16 +351,7 @@ function relocateByTime()
     //redraw guides
     const gap = 20; //gap from the svg border
     const yOffset = svgHeight/2+50;
-
-    // const guideG = svg.select('#guideG');
-    // guideG.selectAll('*').remove();    //remove all previously drawn guides
-    // guideG.attr('transform',`translate(20,${svgHeight/2})`);
-    // guideG.append('line').attr('id','centerline')
-    //     .attr('x2', svgWidth - gap*2)
-    //     .style('stroke','white').style('stroke-width','1px');
-    
-
-    const width = svgWidth - gap*2;
+    const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
 
     const steps = [];
     const oneMinuteInMS = 60000; //1minute = 60000ms
@@ -350,15 +360,12 @@ function relocateByTime()
     for(i=0; i<=maxMin; i+=1){
         steps.push(i);
     }
-    const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
-    var largestMS = steps[steps.length-1]*oneMinuteInMS;
-    var remainedMS = timeMax - largestMS;
-    console.log('remained ms: '+remainedMS);
+    var largestMS = steps[steps.length-1] * oneMinuteInMS;
 
     var scaleX = d3.scaleLinear()
         .domain([0, timeMax])
-        .range([guide.margin, guide.width - guide.margin]);
-    var remainedX = scaleX(remainedMS);
+        .range([0, guide.width]);
+    var remainedX = scaleX(timeMax - largestMS);
     console.log("remainedX: "+remainedX);
     redrawXAxisOnGuideG(steps, guide.width-remainedX, yOffset, guide.margin);
     svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
@@ -530,14 +537,13 @@ function redrawXAxisOnGuideG(steps, width=400, yOffset=svgHeight-50, margin=50, 
     //redraw guides
     guideG.append('line')
         .attr('x2', width)
-        .style('stroke', color).style('stroke-width', '1px');
+        .classed('axis-line', true);
     guideG.selectAll('circle')
             .data(steps)
         .enter().append('circle')
             .attr('cx', d => scaleX(d))
             .attr('r', dotSize)
-            .attr('fill', 'white')
-            .attr('stroke', color);
+            .classed('axis-line', true);
     guideG.selectAll('text')
             .data(steps)
         .enter().append('text')
