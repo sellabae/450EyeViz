@@ -1,2 +1,4 @@
 # macOS specific
 .DS_STORE
+# other assets
+assets/others
