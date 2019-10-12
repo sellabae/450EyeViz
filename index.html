@@ -22,25 +22,27 @@
 
 <body>
 <div class="content layout-check">
-    <div class="container-fluid row pt-3 pb-2">
+    <div class="container-fluid row align-items-end pt-3 pb-2">
         <!-- Title -->
-        <div class="col-sm-9 col-8 unselectable">
+        <div class="col-md-9 col-sm-7 col-7 unselectable">
             <span class="h2 m-0">
                 Participant
                 <span id="participantId">7</span>
             </span>
-            <span class="h4 m-0 text-muted d-sm-inline d-block">
+            <span class="h4 m-0 text-muted d-md-inline d-sm-block d-block">
                 eye-tracking data
             </span>
         </div>
         <!-- Data option: Tree or Graph -->
-        <div class="col-sm-3 col-4 text-md-left text-right align-self-end">
+        <div class="col-md-3 col-sm-5 col-5 text-md-left text-right">
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
-                    <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"  onclick="fetchCsvCallOthers()" checked> Tree
+                    <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off" onclick="fetchCsvCallOthers()" checked>
+                    Tree
                 </label>
                 <label class="btn btn-secondary">
-                    <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()"> Graph
+                    <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()">
+                    Graph
                 </label>
             </div>
         </div>

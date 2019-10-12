@@ -25,6 +25,14 @@
 .text-muted {
     font-weight: lighter;
 }
+.btn-secondary {
+    background-color: #999ba1;
+    border-color: white;
+}
+.btn-secondary:hover {
+    background-color: #7c7c83;
+    border-color: white;
+}
 
 
 /* scatter plot */
