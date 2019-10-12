@@ -40,10 +40,10 @@
     border: 1px solid #EEE;
     border-radius: 3px;
 }
-#svgDiv circle {
+#svgDiv #plotG circle {
     opacity: 0.8;
 }
-#svgDiv circle:hover {
+#svgDiv #plotG circle:hover {
     opacity: 1;
     stroke: white;
     stroke-width: 1.5px;
@@ -190,4 +190,13 @@
     font-size: 0.6em;
     font-weight: lighter;
     color: #BBB;
+}
+
+
+
+
+.axis-text {
+    font-size: 0.8em;
+    font-weight: lighter;
+	text-anchor: middle;
 }
