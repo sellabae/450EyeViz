@@ -8,7 +8,7 @@ var rScale = d3.scaleLinear()
     .range([3,23]);
 var colorScale = d3.scaleLinear()
     .range(['#0066ff', '#d0ff00', '#f00000'])
-    .interpolate(d3.interpolateHcl);;
+    .interpolate(d3.interpolateHcl);
 //svg
 var svg, svgDiv, svgHeight, svgWidth;
 
@@ -16,7 +16,7 @@ var svg, svgDiv, svgHeight, svgWidth;
 var timeSlider = d3.select('#timeRange');
 var timeLabel = d3.select('#timeLabel');
 function timeUpdate(val) {
-    timeLabel.text(val+'s');
+    timeLabel.text(val);
 }
 var durationSlider = d3.select('#durationSlider');
 var pupilSlider = d3.select('#pupilSlider');
@@ -50,6 +50,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
 document.addEventListener('dblclick', clearAllFilters);
 
+/**
+ * Updates the time slider
+ * Updates time label
+ */
+function resetTime() {
+    maxTimeInMs = Math.round(timeMax/1000);
+    timeSlider.attr('max', maxTimeInMs);
+    timeSlider.attr('value', maxTimeInMs);
+    timeUpdate(millisToMinutesAndSeconds(timeMax));
+}
 
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
@@ -74,8 +84,9 @@ function fetchCsvCallOthers()
             d.avg_dilation = +d.avg_dilation;
         });
         mergedData = data;
-        setScales(mergedData);  
+        setScales(mergedData);
         drawCircles(mergedData);
+        resetTime();
     });
 }
 
@@ -179,13 +190,13 @@ function drawCircles(data)
             tooltip.style("visibility", "hidden");
             d3.select('#details').html('');
         })
-        .transition()
-        .delay(function(d, i){
+        // .transition()
+        // .delay(function(d, i){
             // console.log(d.time/1000);
             // timeSlider.attr('value',d.time/1000);
             // timeUpdate(d.time/1000);
-            return timeScale(i*d.time);
-        })
+            // return timeScale(i*d.time);
+        // })
         .attr("visibility", "visible");
         // .transition().duration( (d,i) => {
         //     return timeScale(i*d.duration);
@@ -217,6 +228,24 @@ function filterByFeature(feature, val, step)
     })
     .style('opacity', highlightOpacity);
     
+}
+
+function millisToMinutesAndSeconds(millis) {
+    var minutes = Math.floor(millis / 60000);
+    var seconds = ((millis % 60000) / 1000).toFixed(0);
+    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+}
+
+function filterByTime(val) {
+    timeSlider.attr('value', val);
+    val *= 1000;
+    timeUpdate(millisToMinutesAndSeconds(val));
+    svg.select('#plotG').selectAll('circle')
+        .style('opacity', mutedOpacity)
+        .filter(function(d) {
+            return (d['time'] <= val);
+        })
+        .style('opacity', highlightOpacity);
 }
 
 // Removes filter effect when double clicked on document
@@ -380,6 +409,13 @@ function relocateByTime()
         .attr('cx', d => scaleX(d.time))
         .attr('cy', d => { return svgHeight/2;});
 
+}
+
+function play() {
+    var i;
+    for(i=0; i<Math.round(timeMax/1000); i++) {
+        timeSlider.value(i);
+    }
 }
 
 // Relocates Plots with duration on x axis
