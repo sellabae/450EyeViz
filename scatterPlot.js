@@ -339,7 +339,12 @@ function drawLegends()
 function relocateByXY()
 {
     console.log('relocating plots by x-y coordinate.');
+
+    //Update the 'x-y' button pressed
+    d3.select('#viewOptions').selectAll('button').classed('active', false);
+    d3.select('#viewOption-xy').classed('active', true);
     
+    //Relocate the plots
     var plotG = d3.select('#plotG');
     var plots = plotG.selectAll('circle');
 
@@ -379,9 +384,13 @@ function relocateByXY()
 // Relocates plots aligned in the center line by time
 function relocateByTime()
 {
-    //NOTE: why not applied when redrawed with radio button?
     console.log('relocating plots by time.');
 
+    //Update the 'time' button pressed
+    d3.select('#viewOptions').selectAll('button').classed('active', false);
+    d3.select('#viewOption-time').classed('active', true);
+
+    //Relocate the plots
     const plotG = d3.select('#plotG');
     const plots = plotG.selectAll('circle');
     
@@ -433,6 +442,11 @@ function relocateByDuration()
 {
     console.log('relocating plots by duration.');
 
+    //Update the 'duration' button pressed
+    d3.select('#viewOptions').selectAll('button').classed('active', false);
+    d3.select('#viewOption-duration').classed('active', true);
+
+    //Relocate the plots
     const steps = [0, 0.5, 1, 1.5, 2];
     const guide = { width:400, margin:50, dotSize:2, color:'gray' };
 
@@ -530,6 +544,11 @@ function relocateByPupilDilation()
 {
     console.log('relocating plots by pupil dilation.');
 
+    //Update the 'dilation' button pressed
+    d3.select('#viewOptions').selectAll('button').classed('active', false);
+    d3.select('#viewOption-dilation').classed('active', true);
+
+    //Relocate the plots
     const steps = [0, 0.25, 0.5, 0.75, 1];
     const guide = { width:400, margin:50, dotSize:2, color:'gray' };
 

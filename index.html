@@ -69,20 +69,27 @@
 
         <!-- Side Panel for duration, pupil size and extra information-->
         <div id="side-div" class="col-md-3 px-0 pl-md-4 pt-4 unselectable">
-            
-            <!-- Info Details -->
+            <!-- Upper block -->
             <div class="h-50 pb-3">
+                <!-- View options -->
                 <div class="text-center pb-3">
-                    <div class="btn-group btn-group-sm mb-3">
-                        <button class="btn btn-outline-primary" onclick="relocateByXY()">x-y</button>
-                        <button class="btn btn-outline-primary" onclick="relocateByTime()">time</button>
-                        <button class="btn btn-outline-primary" onclick="relocateByDuration()">duration</button>
-                        <button class="btn btn-outline-primary" onclick="relocateByPupilDilation()">dilation</button>
+                    <div id="viewOptions" class="btn-group btn-group-sm mb-3">
+                        <button id="viewOption-xy" class="btn btn-outline-primary active"
+                            onclick="relocateByXY()">x-y</button>
+                        <button id="viewOption-time" class="btn btn-outline-primary"
+                            onclick="relocateByTime()">time</button>
+                        <button id="viewOption-duration" class="btn btn-outline-primary"
+                            onclick="relocateByDuration()">duration</button>
+                        <button id="viewOption-dilation" class="btn btn-outline-primary"
+                            onclick="relocateByPupilDilation()">dilation</button>
                     </div>
                 </div>
-                <h6>Details</h6>
-                <div id="details">
-                    <p>...</p>
+                <!-- Info Details -->
+                <div class="m-0 p-0">
+                    <h6>Details</h6>
+                    <div id="details">
+                        <p>...</p>
+                    </div>
                 </div>
             </div>
             <!-- Legends -->
