@@ -372,8 +372,8 @@ function relocateByXY()
     //relocate plots
     // basicOpacity = 0.8;
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
-        .ease(d3.easeExp).duration(2000)
+        .delay(function(d,i){ return 0.2*i; }) 
+        .ease(d3.easeCubic).duration(1000)
         .style('visibility','visible')
         // .style('opacity', basicOpacity)
         .attr('cx', d => xScale(d.x))
@@ -472,7 +472,7 @@ function relocateByDuration()
         .domain([-250, 2250])
         .range(steps);
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
+        .delay(function(d,i){ return 0.2*i; }) 
         .ease(d3.easeElastic).duration(2000)
         .style('visibility','visible')
         .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
@@ -574,7 +574,7 @@ function relocateByPupilDilation()
         .domain([-0.125, 1.125])
         .range(steps);
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
+        .delay(function(d,i){ return 0.2*i; }) 
         .ease(d3.easeElastic).duration(2000)
         .style('visibility','visible')
         .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
@@ -583,6 +583,43 @@ function relocateByPupilDilation()
         
     //TODO: Show count for each steps?
     
+
+}
+
+function relocateByCombi()
+{
+    console.log('relocating plots by x: duration, y: dilation.');
+
+    //Update the 'duration/dilation' button pressed
+    d3.select('#viewOptions').selectAll('button').classed('active', false);
+    d3.select('#viewOption-combi').classed('active', true);
+
+    //TODO: duration on the x axis (size)
+    //TODO: dilationon on the y axis (color)
+    const width = 500;
+    const height = 300;
+
+    const steps = [0, 0.5, 1, 1.5, 2];
+    redrawXAxis('Fixation Duration', 's', steps, width);
+    //TODO: draw YAxis
+
+    const plotG = d3.select('#plotG');
+    const plots = plotG.selectAll('circle');
+
+    const scaleX = d3.scaleLinear()
+        .domain([0,durationMax])
+        .range([0,width]);
+    const scaleY = d3.scaleLinear()
+        .domain([0,pupilMax])
+        .range([height,0]);
+    const xOffset = svgWidth/2-width/2;
+    const yOffset = svgHeight-height -80;
+    
+    plots.transition()
+        .delay(function(d,i){ return 0.2*i; }) 
+        .ease(d3.easeCubic).duration(1000)
+        .attr('cx', d => scaleX(d.duration) + xOffset)
+        .attr('cy', d => scaleY(d.avg_dilation) + yOffset);
 
 }
 
