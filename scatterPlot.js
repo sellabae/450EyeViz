@@ -48,7 +48,8 @@ document.addEventListener('DOMContentLoaded', function(){
     fetchCsvCallOthers();
 });
 
-document.addEventListener('dblclick', clearAllFilters);
+// //clear filter when double clicked on the document
+// document.addEventListener('dblclick', clearAllFilters);
 
 /**
  * Updates the time slider
@@ -227,6 +228,15 @@ function filterByFeature(feature, val, step)
         return (d[feature] >= start) && (d[feature] <= end);
     })
     .style('opacity', highlightOpacity);
+
+    //TODO: Mark the active filter on the slider.. give class to it.
+    var legendSvg;
+    if (feature =='duration') {
+        legendSvg = d3.select('#svgDurationSlider');
+    } else if (feature=='avg_dilation') {
+        legendSvg = d3.select('#svgPupilSlider');
+    }
+    // legendSvg.select('.steps').selectAll('circle')...
     
 }
 
@@ -251,9 +261,9 @@ function filterByTime(val) {
 // Removes filter effect when double clicked on document
 function clearAllFilters() { 
     console.log('clearing all filters.');
-    // alert('document double clicked!');
     svg.selectAll('circle')
     .style('opacity', basicOpacity);
+    //TODO: Clear the marks on the legend sliders
 };
 
 // Draws legends with circles and scales under sliders
