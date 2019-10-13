@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<!-- JavaScript -->
+<script type="text/javascript">
+    
+    var fixationData, gazeData, coordinateScale, radiusScale;
+
+    //fetching csvs
+    Promise.all([
+        d3.csv("../data_preprocessed/tree_fixation.csv"),
+        d3.csv("../data_preprocessed/tree_gaze.csv")
+        ]).then(function(files){
+
+            fixationData = files[0];
+            gazeData = files[1];
+            drawCircles(fixationData, gazeData);
+
+        });
+
+
+
+    //calculates scales for both radii and coordinates of circles
+    function calculateScales(fixationData, GazeData){
+
+    }
+
+
+    //draws the circles
+    function drawCircles(fixationData, gazeData){
+
+            /*var svg = d3.select("#data")
+                .append("svg")
+                .attr("width", '1000')
+                .attr("height", '1000');*/
+
+		var tooltip = d3.select("body")
+				.append("div")
+				.style("position", "absolute")
+				.style("z-index", "10")
+				.style("visibility", "hidden")
+				.text("");
+
+            var svg = d3.select("#dataSvg");
+
+            svg.selectAll("circle")
+                .data(fixationData)
+                .enter().append("circle")
+                .attr("cx", function(d){
+                        return d.x;
+                    })
+                .attr("cy", function(d){
+                        return d.y;
+                    })
+                .attr("r", function(d){
+                    return d.duration/100;
+                })
+                .attr("fill", "red")
+					.style("opacity", 0.4)
+					.on('mouseover', function(d, i) {
+						d3.select(this)
+								.attr("fill", "grey")
+								.style("opacity", 1.0);
+						tooltip.style("visibility", "visible");
+						tooltip.text("Duration: " + d.duration + ", " + "Time: " + d.time);
+					})
+					.on("mousemove", function(d, i) {
+						return tooltip.style("top",
+							(d3.event.pageY-10)+"px")
+								.style("left",(d3.event.pageX+10)+"px");
+					})
+					.on('mouseout', function(d, i){
+						d3.select(this)
+								.attr("fill", "red")
+						.style("opacity", 0.4);
+						tooltip.style("visibility", "hidden");
+					});
+    }
+
+
+
+</script>
+
+
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Tree Fixation Points</title>
+</head>
+<body>
+
+	<div style="width: 1500px; height: 1000px; border: 2px solid black;">
+		<svg id="dataSvg" width="1500" height="1000"></svg>
+
+	</div>
+
+</body>
+</html>

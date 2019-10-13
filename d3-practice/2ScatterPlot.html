@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Scatter Plot Graph FXD</title>
+        <!-- D3 version5 mini -->
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <style>
+            circle {fill:blue; stroke:white; stroke-width:0.5px; fill-opacity:0.5;}
+        </style>
+    </head>
+    <body>
+        <div id="menu">
+            <p>Time-based scatter plot</p>
+            <!-- <button onClick="render();">Insert plot</button> -->
+        </div>
+        <svg id="plotSVG" width="900" height="600">
+            <g id="plots"></g>
+        </svg>
+        
+        <script>
+            "use strict";
+            
+            const svg = d3.select("#plotSVG");
+            const width = +svg.attr('width');
+            const height = +svg.attr('height');
+
+            function render(data) {
+                const xValue = d => d.x;
+                const yValue = d => d.y;
+                const rValue = d => d.duration;
+                const margin = { top:30, right:30, bottom:30, left:30 };
+                const innerWidth = width - margin.left - margin.right;
+                const innerHeight = height - margin.top - margin.bottom;
+                const xMax = d3.max(data, xValue);
+                const yMax = d3.max(data, yValue);
+                const rMax = d3.max(data, rValue);
+
+                const xScale = d3.scaleLinear()
+                    .domain([0, xMax])
+                    .range([0, innerWidth])
+                    .nice();
+                const yScale = d3.scaleLinear()
+                    .domain([0, yMax])
+                    .range([0, innerHeight])
+                    .nice();
+                const rScale = d3.scaleLinear()
+                    .domain([0, rMax])
+                    .range([2, 10])
+                    .nice();
+
+
+                const g = svg.select('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`)
+                    .selectAll('circle')
+                    .data(data, function(d){ return d; });
+                // g.exit().remove();
+                g.enter().append('circle')
+                    .attr('cx', d => xScale(xValue(d)))
+                    .attr('cy', d => xScale(yValue(d)))
+                    .attr('r', d => rScale(rValue(d)));
+
+                // Drawing with time
+                // data.forEach( function(d, i) {
+                //     d.time = +d.time;    //time to use for dynamic plotting
+                //     console.log(i+". time: "+ d.time);
+                //     plot(d);
+                // });
+            }
+
+            //Update through time
+            //Append the circle through timestamp
+            //Append one circle of fixation point
+            // function plot(d){
+            //     svg.selectAll("circle")
+            //     .data(d).enter().append("circle")
+            //     .attr("cx", d.x*0.5)
+            //     .attr("cy", d.y*0.5)
+            //     .attr("r", d.duration/60);
+            // }
+
+            //Bind Data
+            var fixData;
+            d3.csv("../data_preprocessed/graph_fixation.csv")
+                .then(data => {
+                    data.forEach(d => {
+                        //do something for each
+                        d.x = +d.x;
+                        d.y = +d.y;
+                        d.time = +d.time;
+                        d.duration = +d.duration;
+                    });
+                    fixData = data;
+                    render(data);
+                });
+        </script>
+
+    </body>
+</html>
