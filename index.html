@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Eye-Tracking Data Visualization</title>
+    <link id="favicon" rel="shortcut icon" href="assets/favicon.ico"/>
+    
+<!-- Libraries -->
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <!-- jQuery and Ajax -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+<!-- Layout and Styling -->
+    <!-- Bootstrap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+<!-- JavaScript file added at the bottom of the body -->
+</head>
+
+<body>
+<div class="content layout-check">
+    <div class="container-fluid row align-items-end pt-3 pb-2">
+        <!-- Title -->
+        <div class="col-md-9 col-sm-9 col-7 px-0 unselectable">
+            <span class="h2 m-0">
+                Participant
+                <span id="participantId">7</span>
+            </span>
+            <span class="h4 m-0 text-muted d-md-inline d-sm-inline d-block">
+                eye-tracking data
+            </span>
+        </div>
+        <!-- Data option: Tree or Graph -->
+        <div class="col-md-3 col-sm-3 col-5 px-0 pl-md-4 text-md-left text-right">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary">
+                    <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off" onclick="fetchCsvCallOthers()" checked>
+                    Tree
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()">
+                    Graph
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid row">
+        <div id="viz-div" class="col-md-9 col-sm-12 px-0">
+            <!-- Visualization -->
+            <div id="svgDiv" class="max-width" style="height:75vh">
+                
+                <!--SVG is added here-->
+            
+            </div>
+            <!-- Time slider -->
+            <div id="time-div" class="slider-container pt-2 unselectable">
+                <p id="timeLabel" for="timeRange" class="m-0">value</p>
+                <input type="range" id="timeRange" class="slider"
+                    oninput="filterByTime(this.value)" min='0' max='' step='1' value=''>
+            </div>
+        </div>
+
+        <!-- Side Panel for duration, pupil size and extra information-->
+        <div id="side-div" class="col-md-3 px-0 pl-md-4 pt-4 unselectable">
+            <div class="text-center pb-3">
+                <div class="btn-group btn-group-sm mb-3">
+                    <button class="btn btn-outline-primary" onclick="relocateByXY()">x-y</button>
+                    <button class="btn btn-outline-primary" onclick="relocateByTime()">time</button>
+                    <button class="btn btn-outline-primary" onclick="relocateByDuration()">duration</button>
+                    <button class="btn btn-outline-primary" onclick="relocateByPupilDilation()">dilation</button>
+                </div>
+            </div>
+            <!-- Info Details -->
+            <div class="h-50 pb-3">
+                <h6>Details</h6>
+                <div id="details">
+                    <p>...</p>
+                </div>
+            </div>
+            <!-- Legends -->
+            <div class="row p-0 m-0">
+                <div class="col-md-12 col-6 p-0 mb-5 pr-3">
+                    <h6>Fixation Duration</h6>
+                    <div id="legend-duration" class="legend-container">
+                        <input type="range" id="durationSlider" class="legend-slider"
+                            min='0' max='2000' value='0' step='500'
+                            oninput="filterByFeature('duration',this.value,this.step)">
+                        <svg id="svgDurationSlider" class="legend-svg"></svg>
+                    </div>
+                </div>
+                <div class="col-md-12 col-6 p-0 mb-5">
+                    <h6>Pupil Dilation</h6>
+                    <div id="legend-pupil" class="legend-container">
+                        <input type="range" id="pupilSlider" class="legend-slider"
+                            min='0' max='1' value='0' step='0.25'
+                            oninput="filterByFeature('avg_dilation',this.value,this.step)">
+                        <svg id="svgPupilSlider" class="legend-svg"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid row pt-4">
+        <div id="info-div" class="col px-0 text-right unselectable">
+            <!-- <b>Info</b><br> -->
+            CECS450 Data Visualzation project<br>
+            Supported browsers: Chrome, Safari
+        </div>
+    </div>
+
+</div>
+<!-- end of the content -->
+
+    <!-- JavaScript -->
+    <script type="text/javascript" src="scatterPlot.js"></script>
+    
+</body>
+
+</html>

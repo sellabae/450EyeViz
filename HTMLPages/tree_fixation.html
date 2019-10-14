@@ -8,47 +8,80 @@
 <!-- JavaScript -->
 <script type="text/javascript">
     
-    var fixationData;
-  
+    var fixationData, gazeData, coordinateScale, radiusScale;
 
+    //fetching csvs
+    Promise.all([
+        d3.csv("../data_preprocessed/tree_fixation.csv"),
+        d3.csv("../data_preprocessed/tree_gaze.csv")
+        ]).then(function(files){
 
-    d3.csv("tree_fixation_points.csv")
-        .then(function(data){
-            fixationData = data;
-            console.log(data);
-            drawCircles(fixationData);
+            fixationData = files[0];
+            gazeData = files[1];
+            drawCircles(fixationData, gazeData);
+
         });
 
-    
 
 
+    //calculates scales for both radii and coordinates of circles
+    function calculateScales(fixationData, GazeData){
+
+    }
 
 
-
-    function drawCircles(data){
+    //draws the circles
+    function drawCircles(fixationData, gazeData){
 
             /*var svg = d3.select("#data")
                 .append("svg")
                 .attr("width", '1000')
                 .attr("height", '1000');*/
 
+		var tooltip = d3.select("body")
+				.append("div")
+				.style("position", "absolute")
+				.style("z-index", "10")
+				.style("visibility", "hidden")
+				.text("");
+
             var svg = d3.select("#dataSvg");
 
             svg.selectAll("circle")
-                .data(data)
+                .data(fixationData)
                 .enter().append("circle")
                 .attr("cx", function(d){
-                        return d.screen_x;
+                        return d.x;
                     })
                 .attr("cy", function(d){
-                        return d.screen_y;
+                        return d.y;
                     })
                 .attr("r", function(d){
                     return d.duration/100;
                 })
-                .attr("fill", "grey");
-                
+                .attr("fill", "red")
+					.style("opacity", 0.4)
+					.on('mouseover', function(d, i) {
+						d3.select(this)
+								.attr("fill", "grey")
+								.style("opacity", 1.0);
+						tooltip.style("visibility", "visible");
+						tooltip.text("Duration: " + d.duration + ", " + "Time: " + d.time);
+					})
+					.on("mousemove", function(d, i) {
+						return tooltip.style("top",
+							(d3.event.pageY-10)+"px")
+								.style("left",(d3.event.pageX+10)+"px");
+					})
+					.on('mouseout', function(d, i){
+						d3.select(this)
+								.attr("fill", "red")
+						.style("opacity", 0.4);
+						tooltip.style("visibility", "hidden");
+					});
     }
+
+
 
 </script>
 
