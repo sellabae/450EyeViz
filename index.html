@@ -36,15 +36,17 @@
                 eye-tracking data
             </span>
         </div>
-        <!-- Data option: Tree or Graph -->
+        <!-- Data options: Tree or Graph -->
         <div class="col-md-3 col-sm-3 col-5 px-0 pl-md-4 text-md-left text-right">
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
-                    <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off" onclick="fetchCsvCallOthers()" checked>
+                    <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"
+                        onclick="fetchCsvCallOthers()" checked>
                     Tree
                 </label>
                 <label class="btn btn-secondary">
-                    <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off" onclick="fetchCsvCallOthers()">
+                    <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off"
+                        onclick="fetchCsvCallOthers()">
                     Graph
                 </label>
             </div>
@@ -53,6 +55,17 @@
 
     <div class="container-fluid row">
         <div id="viz-div" class="col-md-9 col-sm-12 px-0">
+            <!-- View options: x-y, time, duration, or dilation -->
+            <div id="viewOptions" class="btn-group btn-group-sm d-flex my-2">
+                <button id="viewOption-xy" class="btn btn-outline-secondary w-100 active"
+                        onclick="viewByXY()">x-y</button>
+                <button id="viewOption-time" class="btn btn-outline-secondary w-100"
+                        onclick="viewByTime()">time</button>
+                <button id="viewOption-duration" class="btn btn-outline-secondary w-100"
+                        onclick="viewByDuration()">duration</button>
+                <button id="viewOption-dilation" class="btn btn-outline-secondary w-100"
+                        onclick="viewByPupilDilation()">dilation</button>
+            </div>
             <!-- Visualization -->
             <div id="svgDiv" class="max-width" style="height:75vh">
                 
@@ -60,24 +73,17 @@
             
             </div>
             <!-- Time slider -->
-            <div id="time-div" class="slider-container pt-2 unselectable">
-                <p id="timeLabel" for="timeRange" class="m-0">value</p>
+            <div id="time-div" class="slider-container pt-2 unselectable mb-2">
                 <input type="range" id="timeRange" class="slider"
                     oninput="filterByTime(this.value)" min='0' max='' step='1' value=''>
+                <p id="timeLabel" for="timeRange" class="m-0">m:ss</p>
+                <!-- <button id="playBtn" class="btn btn-danger btn-sm" onclick="play()">▶</button> -->
             </div>
         </div>
 
         <!-- Side Panel for duration, pupil size and extra information-->
         <div id="side-div" class="col-md-3 px-0 pl-md-4 pt-4 unselectable">
-            <div class="text-center pb-3">
-                <div class="btn-group btn-group-sm mb-3">
-                    <button class="btn btn-outline-primary" onclick="relocateByXY()">x-y</button>
-                    <button class="btn btn-outline-primary" onclick="relocateByTime()">time</button>
-                    <button class="btn btn-outline-primary" onclick="relocateByDuration()">duration</button>
-                    <button class="btn btn-outline-primary" onclick="relocateByPupilDilation()">dilation</button>
-                </div>
-            </div>
-            <!-- Info Details -->
+            <!-- Details -->
             <div class="h-50 pb-3">
                 <h6>Details</h6>
                 <div id="details">
@@ -85,8 +91,8 @@
                 </div>
             </div>
             <!-- Legends -->
-            <div class="row p-0 m-0">
-                <div class="col-md-12 col-6 p-0 mb-5 pr-3">
+            <div class="h-50 row p-0 m-0">
+                <div class="col-md-12 col-6 p-0 mb-4 pr-3">
                     <h6>Fixation Duration</h6>
                     <div id="legend-duration" class="legend-container">
                         <input type="range" id="durationSlider" class="legend-slider"
@@ -95,7 +101,7 @@
                         <svg id="svgDurationSlider" class="legend-svg"></svg>
                     </div>
                 </div>
-                <div class="col-md-12 col-6 p-0 mb-5">
+                <div class="col-md-12 col-6 p-0 mb-4">
                     <h6>Pupil Dilation</h6>
                     <div id="legend-pupil" class="legend-container">
                         <input type="range" id="pupilSlider" class="legend-slider"
@@ -103,6 +109,9 @@
                             oninput="filterByFeature('avg_dilation',this.value,this.step)">
                         <svg id="svgPupilSlider" class="legend-svg"></svg>
                     </div>
+                </div>
+                <div class="col-12 m-0 p-0 align-left">
+                    <button class="btn btn-light btn-sm" onclick="clearAllFilters()">clear filter</button>
                 </div>
             </div>
         </div>

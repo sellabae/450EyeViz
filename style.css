@@ -29,10 +29,14 @@
     background-color: #999ba1;
     border-color: white;
 }
-.btn-secondary:hover {
+.btn-secondary:hover{
     background-color: #7c7c83;
     border-color: white;
 }
+/* .btn:focus, .btn:active:focus, .btn.active:focus{
+    outline:none;
+    box-shadow:none;
+} */
 
 
 /* scatter plot */
@@ -57,7 +61,7 @@
     background-color: #EEE;
     border-radius: 3px;
     /* border: 1px solid #EEE; */
-    font-size: 0.7em;
+    font-size: 0.8em;
     font-weight: lighter;
     padding: 4px 6px 4px 6px;
 }
