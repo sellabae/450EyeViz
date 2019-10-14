@@ -49,8 +49,7 @@ document.addEventListener('DOMContentLoaded', function(){
     fetchCsvCallOthers();
 });
 
-// //clear filter when double clicked on the document
-// document.addEventListener('dblclick', clearAllFilters);
+
 
 /**
  * Updates the time slider
@@ -206,6 +205,8 @@ function drawCircles(data)
         // .attr('r', rScale(d.duration));
 
         // console.log('Drawing Done!');
+        
+        viewByXY();
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
@@ -343,10 +344,10 @@ function drawLegends()
 }
 
 
-// Relocates plots back to its x,y coordinates
-function relocateByXY()
+// Locates plots back to its x,y coordinates
+function viewByXY()
 {
-    console.log('relocating plots by x-y coordinate.');
+    console.log('locating plots by x-y.');
 
     //Update the 'x-y' button pressed
     d3.select('#viewOptions').selectAll('button').classed('active', false);
@@ -357,28 +358,9 @@ function relocateByXY()
     var plots = plotG.selectAll('circle');
 
     //redraw guides
-    const guideG = svg.select('#guideG');
-    guideG.selectAll('*').remove();    //remove all previously drawn guides
-    //NOTE: this can be imported from svg file
-    guideG.attr('transform','translate(5,5)');
-    var len = 50;
-    var xAxis = guideG.append('g').attr('transform',`translate(5, 0)`);
-    xAxis.append('line').attr('x2',len);
-    xAxis.append('line').attr('x2',-5).attr('y2',-3)
-        .attr('transform',`translate(${len}, 0)`);
-    xAxis.append('text').text('x')
-        .attr('transform',`translate(${len+8}, 4)`);
-    var yAxis = guideG.append('g').attr('transform',`translate(0, 5)`);
-    yAxis.append('line').attr('y2',len);
-    yAxis.append('line').attr('x2',-3).attr('y2',-5)
-        .attr('transform',`translate(0, ${len})`);
-    yAxis.append('text').text('y')
-        .attr('transform',`translate(0, ${len+12})`);
-    guideG.selectAll('line').classed('axis-line',true);
-    guideG.selectAll('text').classed('axis-stepText',true);
+    drawXYMark();
 
     //relocate plots
-    // basicOpacity = 0.8;
     plots.transition()
         .delay(function(d,i){ return i * delayValue; }) 
         .ease(d3.easeExp).duration(2000)
@@ -389,10 +371,39 @@ function relocateByXY()
 
 }
 
-// Relocates plots aligned in the center line by time
-function relocateByTime()
+// Draws xy arrow marks on the svg
+function drawXYMark()
 {
-    console.log('relocating plots by time.');
+    const guideG = svg.select('#guideG');
+    guideG.selectAll('*').remove();    //remove all previously drawn guides
+
+    //NOTE: this can be imported from svg file
+    guideG.attr('transform','translate(5,5)');
+    var len = 50;
+
+    var xAxis = guideG.append('g').attr('transform',`translate(5, 0)`);
+    xAxis.append('line').attr('x2',len);
+    xAxis.append('line').attr('x2',-5).attr('y2',-3)
+        .attr('transform',`translate(${len}, 0)`);
+    xAxis.append('text').text('x')
+        .attr('transform',`translate(${len+8}, 4)`);
+
+    var yAxis = guideG.append('g').attr('transform',`translate(0, 5)`);
+    yAxis.append('line').attr('y2',len);
+    yAxis.append('line').attr('x2',-3).attr('y2',-5)
+        .attr('transform',`translate(0, ${len})`);
+    yAxis.append('text').text('y')
+        .attr('transform',`translate(0, ${len+12})`);
+
+    guideG.selectAll('line').classed('axis-line',true);
+    guideG.selectAll('text').classed('axis-stepText',true);
+    
+}
+
+// Locates plots aligned in the center line by time
+function viewByTime()
+{
+    console.log('locating plots by time.');
 
     //Update the 'time' button pressed
     d3.select('#viewOptions').selectAll('button').classed('active', false);
@@ -426,7 +437,6 @@ function relocateByTime()
 
 
     //relocate plots
-    // basicOpacity = 0.5;
     var scaleX = timeScale.range([gap, svgWidth-gap]);
     plots.transition()
         .delay(function(d,i){ return i * delayValue; }) 
@@ -452,10 +462,10 @@ function play() {
     }
 }
 
-// Relocates Plots with duration on x axis
-function relocateByDuration()
+// Locates Plots with duration on x axis
+function viewByDuration()
 {
-    console.log('relocating plots by duration.');
+    console.log('locating plots by duration.');
 
     //Update the 'duration' button pressed
     d3.select('#viewOptions').selectAll('button').classed('active', false);
@@ -554,10 +564,10 @@ function relocateByDuration()
 
 }
 
-// Relocates Plots with pupil dilation on x axis
-function relocateByPupilDilation()
+// Locates Plots with pupil dilation on x axis
+function viewByPupilDilation()
 {
-    console.log('relocating plots by pupil dilation.');
+    console.log('locating plots by pupil dilation.');
 
     //Update the 'dilation' button pressed
     d3.select('#viewOptions').selectAll('button').classed('active', false);
@@ -601,7 +611,7 @@ function relocateByPupilDilation()
 
 }
 
-// Helps relocateByDuration() and relocateByPupilDilation() to redraw guideG in svg
+// Helps viewByDuration() and viewByPupilDilation() to redraw guideG in svg
 function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight-55, margin=50)
 {
     var scaleX = d3.scaleLinear()
