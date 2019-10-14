@@ -14,9 +14,8 @@ var svg, svgDiv, svgHeight, svgWidth;
 
 //sliders
 var timeSlider = d3.select('#timeRange');
-var timeLabel = d3.select('#timeLabel');
-function timeUpdate(val) {
-    timeLabel.text(val);
+function updateTimeLabel(val) {
+    d3.select('#timeLabel').text(val);
 }
 var durationSlider = d3.select('#durationSlider');
 var pupilSlider = d3.select('#pupilSlider');
@@ -24,6 +23,8 @@ var pupilSlider = d3.select('#pupilSlider');
 var basicOpacity = 0.8;
 var highlightOpacity = 0.8;
 var mutedOpacity = 0.01;
+
+const delayValue = 0.3;
 
 
 // Initial document setup
@@ -59,7 +60,7 @@ function resetTime() {
     maxTimeInMs = Math.round(timeMax/1000);
     timeSlider.attr('max', maxTimeInMs);
     timeSlider.attr('value', maxTimeInMs);
-    timeUpdate(millisToMinutesAndSeconds(timeMax));
+    updateTimeLabel(millisToMinutesAndSeconds(timeMax));
 }
 
 // Fetches the csv, calls other functions
@@ -195,7 +196,7 @@ function drawCircles(data)
         // .delay(function(d, i){
             // console.log(d.time/1000);
             // timeSlider.attr('value',d.time/1000);
-            // timeUpdate(d.time/1000);
+            // updateTimeLabel(d.time/1000);
             // return timeScale(i*d.time);
         // })
         .attr("visibility", "visible");
@@ -248,14 +249,21 @@ function millisToMinutesAndSeconds(millis) {
 
 function filterByTime(val) {
     timeSlider.attr('value', val);
-    val *= 1000;
-    timeUpdate(millisToMinutesAndSeconds(val));
+    var milliSeconds = val * 1000;
+    updateTimeLabel(millisToMinutesAndSeconds(milliSeconds));
+    // svg.select('#plotG').selectAll('circle')
+    //     .style('opacity', mutedOpacity)
+    //     .filter(function(d) {
+    //         return (d.time <= val);
+    //     })
+    //     .style('opacity', highlightOpacity);
+    
     svg.select('#plotG').selectAll('circle')
-        .style('opacity', mutedOpacity)
+        .style('visibility', 'hidden')
         .filter(function(d) {
-            return (d['time'] <= val);
+            return (d.time <= milliSeconds);
         })
-        .style('opacity', highlightOpacity);
+        .style('visibility', 'visible');
 }
 
 // Removes filter effect when double clicked on document
@@ -372,7 +380,7 @@ function relocateByXY()
     //relocate plots
     // basicOpacity = 0.8;
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
+        .delay(function(d,i){ return i * delayValue; }) 
         .ease(d3.easeExp).duration(2000)
         .style('visibility','visible')
         // .style('opacity', basicOpacity)
@@ -421,7 +429,7 @@ function relocateByTime()
     // basicOpacity = 0.5;
     var scaleX = timeScale.range([gap, svgWidth-gap]);
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
+        .delay(function(d,i){ return i * delayValue; }) 
         .ease(d3.easeElastic).duration(2000)
         .style('visibility','visible')
         // .style('opacity', basicOpacity)
@@ -430,10 +438,17 @@ function relocateByTime()
 
 }
 
+//TODO: Implement play
 function play() {
+    console.log('play through time');
     var i;
     for(i=0; i<Math.round(timeMax/1000); i++) {
-        timeSlider.value(i);
+        // timeSlider.value(i);
+        setTimeout(function(){
+            filterByTime(i);
+            console.log(i);
+        }, 1000);
+        //NOTE: not working yet...
     }
 }
 
@@ -472,7 +487,7 @@ function relocateByDuration()
         .domain([-250, 2250])
         .range(steps);
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
+        .delay(function(d,i){ return i * delayValue; }) 
         .ease(d3.easeElastic).duration(2000)
         .style('visibility','visible')
         .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
@@ -500,7 +515,7 @@ function relocateByDuration()
         
     //     filteredPlots
     //         // .transition()
-    //         // .delay(function(d,i){ return 0.5*i; }) 
+    //         // .delay(function(d,i){ return i * delayValue; }) 
     //         // .ease(d3.easeExp).duration(2000)
     //         .attr('visibility','visible')
     //         .attr('cx', scaleX(step) + xOffset)
@@ -574,7 +589,7 @@ function relocateByPupilDilation()
         .domain([-0.125, 1.125])
         .range(steps);
     plots.transition()
-        .delay(function(d,i){ return 0.5*i; }) 
+        .delay(function(d,i){ return i * delayValue; }) 
         .ease(d3.easeElastic).duration(2000)
         .style('visibility','visible')
         .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
