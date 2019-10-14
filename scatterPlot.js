@@ -10,7 +10,18 @@ var colorScale = d3.scaleLinear()
     .range(['#0066ff', '#d0ff00', '#f00000'])
     .interpolate(d3.interpolateHcl);
 //svg
-var svg, svgDiv, svgHeight, svgWidth;
+var svgDiv;
+var svg, svgWidth, svgHeight;
+var svgRatio = 4/6;
+
+//view option
+var ViewOption = {
+    XY: 1,
+    TIME: 2,
+    DURATION: 3,
+    DILATION: 4
+};
+var currentViewOption = ViewOption.XY;
 
 //sliders
 var timeSlider = d3.select('#timeRange');
@@ -36,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function(){
     svgWidth = +svgDiv.offsetWidth;
     svgHeight = +svgDiv.offsetHeight;
 
-    // TODO: make svg in index.html and adjust size
     svg = d3.select("#svgDiv")
         .append("svg")
         .attr("width", '100%')
@@ -49,8 +59,33 @@ document.addEventListener('DOMContentLoaded', function(){
     fetchCsvCallOthers();
 });
 
-// //clear filter when double clicked on the document
-// document.addEventListener('dblclick', clearAllFilters);
+window.addEventListener('resize', resizeSVG);
+
+function resizeSVG(){
+    //update the svg size
+    svgWidth = +svgDiv.offsetWidth;
+    svgHeight = +svgDiv.offsetHeight;
+
+    console.log('Resizing svg w:'+svgWidth+' h:'+svgHeight
+        +'  currentViewOption:'+currentViewOption);
+    
+    //update the plot locations according to the resized svg
+    switch(currentViewOption) {
+        case ViewOption.XY:
+            viewByXY();
+            break;
+        case ViewOption.TIME:
+            viewByTime();
+            break;
+        case ViewOption.DURATION:
+            viewByDuration();
+            break;
+        case ViewOption.DILATION:
+            viewByPupilDilation();
+            break;
+        default:
+    }
+}
 
 /**
  * Updates the time slider
@@ -206,6 +241,8 @@ function drawCircles(data)
         // .attr('r', rScale(d.duration));
 
         // console.log('Drawing Done!');
+        
+        viewByXY();
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
@@ -343,69 +380,110 @@ function drawLegends()
 }
 
 
-// Relocates plots back to its x,y coordinates
-function relocateByXY()
+// Locates plots back to its x,y coordinates
+function viewByXY()
 {
-    console.log('relocating plots by x-y coordinate.');
+    console.log('locating plots by x-y.');
 
-    //Update the 'x-y' button pressed
+    //Update the view state and the button view
+    var isViewChanged = (currentViewOption != ViewOption.XY);
+    currentViewOption = ViewOption.XY;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
     d3.select('#viewOption-xy').classed('active', true);
     
+    //Update the x,y scale to fit the resized svg
+    xScale.range([0+20, svgWidth-50]);
+    yScale.range([0+20, svgHeight-50]);
+
     //Relocate the plots
     var plotG = d3.select('#plotG');
     var plots = plotG.selectAll('circle');
+    if(isViewChanged) {
+        //transition effect for changing view
+        plots.transition()
+            .delay(function(d,i){ return i * delayValue; }) 
+            .ease(d3.easeExp).duration(2000)
+            .style('visibility','visible')
+            // .style('opacity', basicOpacity)
+            .attr('cx', d => xScale(d.x))
+            .attr('cy', d => yScale(d.y));
+    } else {
+        //just resizing the svg
+        plots.style('visibility','visible')
+            .attr('cx', d => xScale(d.x))
+            .attr('cy', d => yScale(d.y));
+    }
 
-    //redraw guides
+    //Redraw guides
+    drawXYMark();
+
+}
+
+// Draws xy arrow marks on the svg
+function drawXYMark()
+{
     const guideG = svg.select('#guideG');
     guideG.selectAll('*').remove();    //remove all previously drawn guides
+
     //NOTE: this can be imported from svg file
     guideG.attr('transform','translate(5,5)');
     var len = 50;
+
     var xAxis = guideG.append('g').attr('transform',`translate(5, 0)`);
     xAxis.append('line').attr('x2',len);
     xAxis.append('line').attr('x2',-5).attr('y2',-3)
         .attr('transform',`translate(${len}, 0)`);
     xAxis.append('text').text('x')
         .attr('transform',`translate(${len+8}, 4)`);
+
     var yAxis = guideG.append('g').attr('transform',`translate(0, 5)`);
     yAxis.append('line').attr('y2',len);
     yAxis.append('line').attr('x2',-3).attr('y2',-5)
         .attr('transform',`translate(0, ${len})`);
     yAxis.append('text').text('y')
         .attr('transform',`translate(0, ${len+12})`);
+
     guideG.selectAll('line').classed('axis-line',true);
     guideG.selectAll('text').classed('axis-stepText',true);
-
-    //relocate plots
-    // basicOpacity = 0.8;
-    plots.transition()
-        .delay(function(d,i){ return i * delayValue; }) 
-        .ease(d3.easeExp).duration(2000)
-        .style('visibility','visible')
-        // .style('opacity', basicOpacity)
-        .attr('cx', d => xScale(d.x))
-        .attr('cy', d => yScale(d.y));
-
+    
 }
 
-// Relocates plots aligned in the center line by time
-function relocateByTime()
+// Locates plots aligned in the center line by time
+function viewByTime()
 {
-    console.log('relocating plots by time.');
+    console.log('locating plots by time.');
 
-    //Update the 'time' button pressed
+    //Update the view state and the button view
+    var isViewChanged = (currentViewOption != ViewOption.TIME);
+    currentViewOption = ViewOption.TIME;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
     d3.select('#viewOption-time').classed('active', true);
+    
+    const gap = 20; //gap from the svg border
 
     //Relocate the plots
     const plotG = d3.select('#plotG');
     const plots = plotG.selectAll('circle');
-    
-    //redraw guides
-    const gap = 20; //gap from the svg border
-    const yOffset = svgHeight/2+50;
+    var scaleX = timeScale.range([gap, svgWidth-gap]);
+    if(isViewChanged) {
+        //transition effect for changing view
+        plots.transition()
+            .delay(function(d,i){ return i * delayValue; }) 
+            .ease(d3.easeElastic).duration(2000)
+            .style('visibility','visible')
+            // .style('opacity', basicOpacity)
+            .attr('cx', d => scaleX(d.time))
+            .attr('cy', d => { return svgHeight/2;});
+    } else {
+        //just resizing the svg
+        plots.style('visibility','visible')
+            .attr('cx', d => scaleX(d.time))
+            .attr('cy', d => { return svgHeight/2;});
+    }
+ 
+    //Redraw guides
     const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
+    const yOffset = svgHeight/2+50;
 
     const steps = [];
     const oneMinuteInMS = 60000; //1minute = 60000ms
@@ -420,21 +498,9 @@ function relocateByTime()
         .domain([0, timeMax])
         .range([0, guide.width]);
     var remainedX = scaleX(timeMax - largestMS);
-    console.log("remainedX: "+remainedX);
+    // console.log("remainedX: "+remainedX);
     redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
     svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
-
-
-    //relocate plots
-    // basicOpacity = 0.5;
-    var scaleX = timeScale.range([gap, svgWidth-gap]);
-    plots.transition()
-        .delay(function(d,i){ return i * delayValue; }) 
-        .ease(d3.easeElastic).duration(2000)
-        .style('visibility','visible')
-        // .style('opacity', basicOpacity)
-        .attr('cx', d => scaleX(d.time))
-        .attr('cy', d => { return svgHeight/2;});
 
 }
 
@@ -452,12 +518,14 @@ function play() {
     }
 }
 
-// Relocates Plots with duration on x axis
-function relocateByDuration()
+// Locates Plots with duration on x axis
+function viewByDuration()
 {
-    console.log('relocating plots by duration.');
+    console.log('locating plots by duration.');
 
-    //Update the 'duration' button pressed
+    //Update the view state and the button view
+    var isViewChanged = (currentViewOption != ViewOption.DURATION);
+    currentViewOption = ViewOption.DURATION;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
     d3.select('#viewOption-duration').classed('active', true);
 
@@ -468,34 +536,38 @@ function relocateByDuration()
     var scaleX = d3.scaleLinear()
         .domain([0, d3.max(steps)])
         .range([guide.margin, guide.width - guide.margin]);
-
-    //redraw guides
-    redrawXAxis('Fixation Duration', 's', steps);
-
-    //relocate plots
-    var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
-    
     var scaleY = d3.scaleLinear()
         .domain([0,3000])
         .range([svgHeight-70, 50]);
 
     var xOffset = svgWidth/2-guide.width/2;
 
+    //relocate plots
+    var plotG = d3.select('#plotG');
+    var plots = plotG.selectAll('circle');
+    
     //Solution3. with scaleQuantize instead of using .filter()
     var scaleQ = d3.scaleQuantize()
         .domain([-250, 2250])
         .range(steps);
-    plots.transition()
-        .delay(function(d,i){ return i * delayValue; }) 
-        .ease(d3.easeElastic).duration(2000)
-        .style('visibility','visible')
-        .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-        .attr('cy', (d,i) => scaleY(i));
+
+    if(isViewChanged) {
+        //transition effect for changing view
+        plots.transition()
+            .delay(function(d,i){ return i * delayValue; }) 
+            .ease(d3.easeElastic).duration(2000)
+            .style('visibility','visible')
+            .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
+            .attr('cy', (d,i) => scaleY(i));
+    } else {
+        //just resizing the svg
+        plots.style('visibility','visible')
+            .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
+            .attr('cy', (d,i) => scaleY(i));
+    }
     //TODO: Solve the problem of plots not placed from the bottom
         
     //TODO: Show count for each steps?
-
 
 
     // //Solution1. filter() with ForEach loop
@@ -552,14 +624,19 @@ function relocateByDuration()
     //     .attr('cy', (d,i) => scaleY(i));
 
 
+    //Redraw guides
+    redrawXAxis('Fixation Duration', 's', steps);
+
 }
 
-// Relocates Plots with pupil dilation on x axis
-function relocateByPupilDilation()
+// Locates Plots with pupil dilation on x axis
+function viewByPupilDilation()
 {
-    console.log('relocating plots by pupil dilation.');
+    console.log('locating plots by pupil dilation.');
 
-    //Update the 'dilation' button pressed
+    //Update the view state and the button view
+    var isViewChanged = (currentViewOption != ViewOption.DILATION);
+    currentViewOption = ViewOption.DILATION;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
     d3.select('#viewOption-dilation').classed('active', true);
 
@@ -570,34 +647,42 @@ function relocateByPupilDilation()
     var scaleX = d3.scaleLinear()
         .domain([0, d3.max(steps)])
         .range([guide.margin, guide.width - guide.margin]);
-
-    //redraw guides
-    redrawXAxis('Pupil Dilation', 'mm', steps);
-
-    //relocate plots
-    var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
-    
     var scaleY = d3.scaleLinear()
         .domain([0,3000])
         .range([svgHeight-70, 50]);
 
     var xOffset = svgWidth/2-guide.width/2;
 
+    //relocate plots
+    var plotG = d3.select('#plotG');
+    var plots = plotG.selectAll('circle');
+
     //Solution3. with scaleQuantize instead of using .filter()
     var scaleQ = d3.scaleQuantize()
         .domain([-0.125, 1.125])
         .range(steps);
-    plots.transition()
-        .delay(function(d,i){ return i * delayValue; }) 
-        .ease(d3.easeElastic).duration(2000)
-        .style('visibility','visible')
-        .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-        .attr('cy', (d,i) => scaleY(i));
+
+    if(isViewChanged) {
+        //transition effect for changing view
+        plots.transition()
+            .delay(function(d,i){ return i * delayValue; }) 
+            .ease(d3.easeElastic).duration(2000)
+            .style('visibility','visible')
+            .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
+            .attr('cy', (d,i) => scaleY(i));
+    } else {
+        //just resizing the svg
+        plots.style('visibility','visible')
+            .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
+            .attr('cy', (d,i) => scaleY(i));
+    }
     //TODO: Solve the problem of plots not placed from the bottom
         
     //TODO: Show count for each steps?
     
+
+    //Redraw guides
+    redrawXAxis('Pupil Dilation', 'mm', steps);
 
 }
 
@@ -645,11 +730,10 @@ function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight
         .domain([0, d3.max(steps)])
         .range([margin, width-margin]);
     
-    //redraw guides
+    //Redraw guides
     const guideG = svg.select('#guideG');
     guideG.selectAll('*').remove();    //remove all previously drawn guides
     guideG.attr('transform',`translate(${svgWidth/2-width/2},${yOffset})`);
-    //redraw guides
     guideG.append('line')
         .attr('x2', width)
         .classed('axis-line', true);
@@ -670,4 +754,5 @@ function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight
         .attr('y', 40)
         .text(label+' ('+unit+')')
         .classed('axis-label', true);
+
 }
