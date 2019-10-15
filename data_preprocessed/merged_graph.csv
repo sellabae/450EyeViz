@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+time,duration,screen_x,secrren_y,avg_dilation
+=======
 time,duration,x,y,avg_dilation
+>>>>>>> d9dab0af420f864e1b30783e6df93dc7e7600f83
 172,120,721,344,0.20246624472573593
 491,100,709,360,0.2519662447257356
 790,100,680,432,0.05146624472573613
