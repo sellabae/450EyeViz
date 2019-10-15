@@ -261,11 +261,11 @@ function filterByFeature(feature, val, step)
 
     // Make selected data stand out
     svg.select('#plotG').selectAll('circle')
-    .style('opacity', mutedOpacity)
-    .filter(function(d) {
-        return (d[feature] >= start) && (d[feature] <= end);
-    })
-    .style('opacity', highlightOpacity);
+        .style('opacity', mutedOpacity)
+        .filter(function(d) {
+            return (d[feature] >= start) && (d[feature] <= end);
+        })
+        .style('opacity', highlightOpacity);
 
     //TODO: Mark the active filter on the slider.. give class to it.
     var legendSvg;
@@ -638,7 +638,7 @@ function viewByPupilDilation()
     var isViewChanged = (currentViewOption != ViewOption.DILATION);
     currentViewOption = ViewOption.DILATION;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-dilation').classed('active', true);
+    d3.select('#viewOption-pupil').classed('active', true);
 
     //Relocate the plots
     const steps = [0, 0.25, 0.5, 0.75, 1];
@@ -686,7 +686,7 @@ function viewByPupilDilation()
 
 }
 
-function relocateByCombi()
+function viewByCombi()
 {
     console.log('relocating plots by x: duration, y: dilation.');
 
