@@ -1,4 +1,4 @@
-number,time,duration,x,y,avg_dilation
+number,time,duration,screen_x,screen_y,avg_dilation
 1,140,100,721,378,0.19003375527426414
 2,280,439,689,523,0.26153375527426403
 3,938,179,387,327,0.370533755274264

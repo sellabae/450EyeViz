@@ -136,10 +136,10 @@ function dataSetToLoad()
 {
     if(document.getElementById("treeRadio").checked) {
         console.log('tree data selected.');
-        return "./data_preprocessed/merged_dilation_fixation_tree.csv";
+        return "./data_preprocessed/merged_tree.csv";
     } else {
         console.log('graph data selected.');
-        return "./data_preprocessed/merged_dilation_fixation_graph.csv";
+        return "./data_preprocessed/merged_graph.csv";
     }
 }
 
