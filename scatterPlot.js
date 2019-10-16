@@ -96,11 +96,14 @@ function resetTime() {
     timeSlider.attr('max', maxTimeInMs);
     timeSlider.attr('value', maxTimeInMs);
     updateTimeLabel(millisToMinutesAndSeconds(timeMax));
+    //timeSlider.attr("visibility", "hidden");
 }
 
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
 {
+    makeTimeRangeInvisible();    
+
     console.log('fetching csv data.');
 
     var drawnSvg = document.getElementById("drawnSvg");
@@ -123,6 +126,7 @@ function fetchCsvCallOthers()
         mergedData = data;
         setScales(mergedData);
         drawCircles(mergedData);
+       // makeTimeRangeVisible();
         resetTime();
     });
 }
@@ -227,14 +231,18 @@ function drawCircles(data)
             tooltip.style("visibility", "hidden");
             d3.select('#details').html('');
         })
-        // .transition()
-        // .delay(function(d, i){
-            // console.log(d.time/1000);
-            // timeSlider.attr('value',d.time/1000);
-            // updateTimeLabel(d.time/1000);
-            // return timeScale(i*d.time);
-        // })
-        .attr("visibility", "visible");
+        .transition()
+        .delay(function(d, i){
+            //console.log(d.time/1000);
+            //timeSlider.attr('value',d.time/1000);
+            //updateTimeLabel(d.time/1000);
+            return timeScale(i*d.time);
+         })
+        .attr("visibility", "visible")
+        .end()
+        .then(() =>{
+            makeTimeRangeVisible();
+        });
         // .transition().duration( (d,i) => {
         //     return timeScale(i*d.duration);
         // })
@@ -242,7 +250,10 @@ function drawCircles(data)
 
         // console.log('Drawing Done!');
         
-        viewByXY();
+        //viewByXY();
+        
+
+
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
@@ -718,4 +729,20 @@ function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight
         .text(label+' ('+unit+')')
         .classed('axis-label', true);
 
+}
+
+//making timeSlider and timeLable visible after plotting
+function makeTimeRangeVisible(){
+    timeSlider.style("visibility", "visible");
+    d3.select('#timeLabel').style("visibility", "visible");    
+
+        
+}
+
+//making timeSlider and timeLable visible after plotting
+function makeTimeRangeInvisible(){
+    timeSlider.style("visibility", "hidden");
+    d3.select('#timeLabel').style("visibility", "hidden");    
+
+        
 }
