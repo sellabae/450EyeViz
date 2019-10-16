@@ -102,9 +102,7 @@ function resetTime() {
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
 {
-    console.log("making time slider invisible");
-    timeSlider.style("visibility", "hidden");
-    d3.select('#timeLabel').style("visibility", "hidden");    
+    makeTimeRangeInvisible();    
 
     console.log('fetching csv data.');
 
@@ -737,6 +735,14 @@ function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight
 function makeTimeRangeVisible(){
     timeSlider.style("visibility", "visible");
     d3.select('#timeLabel').style("visibility", "visible");    
+
+        
+}
+
+//making timeSlider and timeLable visible after plotting
+function makeTimeRangeInvisible(){
+    timeSlider.style("visibility", "hidden");
+    d3.select('#timeLabel').style("visibility", "hidden");    
 
         
 }
