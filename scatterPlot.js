@@ -95,6 +95,7 @@ function resetTime() {
     maxTimeInMs = Math.round(timeMax/1000);
     timeSlider.attr('max', maxTimeInMs);
     timeSlider.attr('value', maxTimeInMs);
+    $("#timeRange").val(maxTimeInMs)
     updateTimeLabel(millisToMinutesAndSeconds(timeMax));
     //timeSlider.attr("visibility", "hidden");
 }
@@ -102,7 +103,8 @@ function resetTime() {
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
 {
-    makeTimeRangeInvisible();    
+    makeTimeRangeInvisible();
+    clearAllFilters();    
 
     console.log('fetching csv data.');
 
@@ -350,9 +352,18 @@ function filterByTime(val) {
 // Removes filter effect when double clicked on document
 function clearAllFilters() { 
     console.log('clearing all filters.');
+
+    //changes actual value of sliders
+    d3.select("#pupilSlider").attr("value", 0);
+    d3.select("#durationSlider").attr("value", 0);
+
+    //changes the view of sliders
+    $("#pupilSlider").val(0);
+    $("#durationSlider").val(0);
+
     svg.selectAll('circle')
     .style('opacity', basicOpacity);
-    //TODO: Clear the marks on the legend sliders
+    //Clear the marks on the legend sliders
 };
 
 // Draws legends with circles and scales under sliders
