@@ -285,18 +285,22 @@ function filterByFeature(feature, val, step)
         //getting value of pupilSlider
         otherFeature = "avg_dilation";
         otherSlider = d3.select("#pupilSlider");
-        var otherSelected = otherSlider.attr("value");
-        var otherInclusiveVal = otherSlider.attr("step")/2;
-        var otherStart = otherSelected - otherInclusiveVal;
-        var otherEnd = otherSelected + otherInclusiveVal;
+        otherSelected = +otherSlider.attr("value");
+        otherInclusiveVal = otherSlider.attr("step")/2;
+        otherStart = otherSelected - otherInclusiveVal;
+        otherEnd = otherSelected + otherInclusiveVal;
+        console.log(`filtering by ${otherFeature} ${otherStart.toFixed(3)} ~ ${otherEnd.toFixed(3)}`);
     }
     else if(feature  == "avg_dilation"){
-          otherFeature = "duration";
+        //getting value of durationSlider
+        otherFeature = "duration";
         otherSlider = d3.select("#durationSlider");
-        var otherSelected = otherSlider.attr("value");
-        var otherInclusiveVal = otherSlider.attr("step")/2;
-        var otherStart = otherSelected - otherInclusiveVal;
-        var otherEnd = otherSelected + otherInclusiveVal;
+        otherSelected = +otherSlider.attr("value");
+        otherInclusiveVal = otherSlider.attr("step")/2;
+        otherStart = otherSelected - otherInclusiveVal;
+        otherEnd = otherSelected + otherInclusiveVal;
+        console.log(`filtering by ${otherFeature} ${otherStart.toFixed(3)} ~ ${otherEnd.toFixed(3)}`);
+
     }
 
     // Make selected data stand out
