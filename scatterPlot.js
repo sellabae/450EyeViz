@@ -264,17 +264,46 @@ function filterByFeature(feature, val, step)
         console.log('not existing feature '+feature);
         return;
     }
+
+    //setting the value of the slider
+    if(feature == "duration")
+        d3.select("#durationSlider").attr("value", val);
+    else if(feature = "avg_dilation")
+        d3.select("#pupilSlider").attr("value", val);
+
+    //actual filter changed
     var selected = +val;
     var inclusiveVal = step/2;
     var start = selected - inclusiveVal;
     var end = selected + inclusiveVal;
     console.log(`filtering by ${feature} ${start.toFixed(3)} ~ ${end.toFixed(3)}`);
 
+    var otherSelected, otherInclusiveVal, otherStart, otherEnd, otherFeature, otherSlider;
+
+    //the other filter
+    if(feature == "duration"){
+        //getting value of pupilSlider
+        otherFeature = "avg_dilation";
+        otherSlider = d3.select("#pupilSlider");
+        var otherSelected = otherSlider.attr("value");
+        var otherInclusiveVal = otherSlider.attr("step")/2;
+        var otherStart = otherSelected - otherInclusiveVal;
+        var otherEnd = otherSelected + otherInclusiveVal;
+    }
+    else if(feature  == "avg_dilation"){
+          otherFeature = "duration";
+        otherSlider = d3.select("#durationSlider");
+        var otherSelected = otherSlider.attr("value");
+        var otherInclusiveVal = otherSlider.attr("step")/2;
+        var otherStart = otherSelected - otherInclusiveVal;
+        var otherEnd = otherSelected + otherInclusiveVal;
+    }
+
     // Make selected data stand out
     svg.select('#plotG').selectAll('circle')
     .style('opacity', mutedOpacity)
     .filter(function(d) {
-        return (d[feature] >= start) && (d[feature] <= end);
+        return (((d[feature] >= start) && (d[feature] <= end)) && ((d[otherFeature] >= otherStart) && (d[otherFeature] <= otherEnd)));
     })
     .style('opacity', highlightOpacity);
 
