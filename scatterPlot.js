@@ -95,6 +95,7 @@ function resetTime() {
     maxTimeInMs = Math.round(timeMax/1000);
     timeSlider.attr('max', maxTimeInMs);
     timeSlider.attr('value', maxTimeInMs);
+    $("#timeRange").val(maxTimeInMs)
     updateTimeLabel(millisToMinutesAndSeconds(timeMax));
     //timeSlider.attr("visibility", "hidden");
 }
@@ -102,7 +103,8 @@ function resetTime() {
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
 {
-    makeTimeRangeInvisible();    
+    makeTimeRangeInvisible();
+    clearAllFilters();    
 
     console.log('fetching csv data.');
 
@@ -264,17 +266,50 @@ function filterByFeature(feature, val, step)
         console.log('not existing feature '+feature);
         return;
     }
+
+    //setting the value of the slider
+    if(feature == "duration")
+        d3.select("#durationSlider").attr("value", val);
+    else if(feature = "avg_dilation")
+        d3.select("#pupilSlider").attr("value", val);
+
+    //actual filter changed
     var selected = +val;
     var inclusiveVal = step/2;
     var start = selected - inclusiveVal;
     var end = selected + inclusiveVal;
     console.log(`filtering by ${feature} ${start.toFixed(3)} ~ ${end.toFixed(3)}`);
 
+    var otherSelected, otherInclusiveVal, otherStart, otherEnd, otherFeature, otherSlider;
+
+    //the other filter
+    if(feature == "duration"){
+        //getting value of pupilSlider
+        otherFeature = "avg_dilation";
+        otherSlider = d3.select("#pupilSlider");
+        otherSelected = +otherSlider.attr("value");
+        otherInclusiveVal = otherSlider.attr("step")/2;
+        otherStart = otherSelected - otherInclusiveVal;
+        otherEnd = otherSelected + otherInclusiveVal;
+        console.log(`filtering by ${otherFeature} ${otherStart.toFixed(3)} ~ ${otherEnd.toFixed(3)}`);
+    }
+    else if(feature  == "avg_dilation"){
+        //getting value of durationSlider
+        otherFeature = "duration";
+        otherSlider = d3.select("#durationSlider");
+        otherSelected = +otherSlider.attr("value");
+        otherInclusiveVal = otherSlider.attr("step")/2;
+        otherStart = otherSelected - otherInclusiveVal;
+        otherEnd = otherSelected + otherInclusiveVal;
+        console.log(`filtering by ${otherFeature} ${otherStart.toFixed(3)} ~ ${otherEnd.toFixed(3)}`);
+
+    }
+
     // Make selected data stand out
     svg.select('#plotG').selectAll('circle')
     .style('opacity', mutedOpacity)
     .filter(function(d) {
-        return (d[feature] >= start) && (d[feature] <= end);
+        return (((d[feature] >= start) && (d[feature] <= end)) && ((d[otherFeature] >= otherStart) && (d[otherFeature] <= otherEnd)));
     })
     .style('opacity', highlightOpacity);
 
@@ -317,9 +352,18 @@ function filterByTime(val) {
 // Removes filter effect when double clicked on document
 function clearAllFilters() { 
     console.log('clearing all filters.');
+
+    //changes actual value of sliders
+    d3.select("#pupilSlider").attr("value", 0);
+    d3.select("#durationSlider").attr("value", 0);
+
+    //changes the view of sliders
+    $("#pupilSlider").val(0);
+    $("#durationSlider").val(0);
+
     svg.selectAll('circle')
     .style('opacity', basicOpacity);
-    //TODO: Clear the marks on the legend sliders
+    //Clear the marks on the legend sliders
 };
 
 // Draws legends with circles and scales under sliders
