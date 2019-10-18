@@ -152,7 +152,6 @@ function setScales(data)
     const durationValue = d => d.duration;   // plot size
     const pupilValue = d => d.avg_dilation;  // plot color
     const timeValue = d => d.time;
-
     xMax = d3.max(data, xValue);
     xMin = d3.min(data, xValue);
     console.log('x '+xMin+' : '+xMax);
@@ -383,6 +382,21 @@ function drawLegends()
 }
 
 
+//TODO: Implement play
+function play() {
+    console.log('play through time');
+    var i;
+    for(i=0; i<Math.round(timeMax/1000); i++) {
+        // timeSlider.value(i);
+        setTimeout(function(){
+            filterByTime(i);
+            console.log(i);
+        }, 1000);
+        //NOTE: not working yet...
+    }
+}
+
+
 // Locates plots back to its x,y coordinates
 function viewByXY()
 {
@@ -405,7 +419,7 @@ function viewByXY()
         //transition effect for changing view
         plots.transition()
             .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeExp).duration(2000)
+            .ease(d3.easeCubic).duration(1000)
             .style('visibility','visible')
             // .style('opacity', basicOpacity)
             .attr('cx', d => xScale(d.x))
@@ -453,243 +467,174 @@ function drawXYMark()
     
 }
 
-// Locates plots aligned in the center line by time
-function viewByTime()
-{
-    console.log('locating plots by time.');
+// // Locates plots aligned in the center line by time
+// function viewByTime()
+// {
+//     console.log('locating plots by time.');
 
-    //Update the view state and the button view
-    var isViewChanged = (currentViewOption != ViewOption.TIME);
-    currentViewOption = ViewOption.TIME;
-    d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-time').classed('active', true);
+//     //Update the view state and the button view
+//     var isViewChanged = (currentViewOption != ViewOption.TIME);
+//     currentViewOption = ViewOption.TIME;
+//     d3.select('#viewOptions').selectAll('button').classed('active', false);
+//     d3.select('#viewOption-time').classed('active', true);
     
-    const gap = 20; //gap from the svg border
+//     const gap = 20; //gap from the svg border
 
-    //Relocate the plots
-    const plotG = d3.select('#plotG');
-    const plots = plotG.selectAll('circle');
-    var scaleX = timeScale.range([gap, svgWidth-gap]);
-    if(isViewChanged) {
-        //transition effect for changing view
-        plots.transition()
-            .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeElastic).duration(2000)
-            .style('visibility','visible')
-            // .style('opacity', basicOpacity)
-            .attr('cx', d => scaleX(d.time))
-            .attr('cy', d => { return svgHeight/2;});
-    } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => scaleX(d.time))
-            .attr('cy', d => { return svgHeight/2;});
-    }
+//     //Relocate the plots
+//     const plotG = d3.select('#plotG');
+//     const plots = plotG.selectAll('circle');
+//     var scaleX = timeScale.range([gap, svgWidth-gap]);
+//     if(isViewChanged) {
+//         //transition effect for changing view
+//         plots.transition()
+//             .delay(function(d,i){ return i * delayValue; }) 
+//             .ease(d3.easeElastic).duration(2000)
+//             .style('visibility','visible')
+//             // .style('opacity', basicOpacity)
+//             .attr('cx', d => scaleX(d.time))
+//             .attr('cy', d => { return svgHeight/2;});
+//     } else {
+//         //just resizing the svg
+//         plots.style('visibility','visible')
+//             .attr('cx', d => scaleX(d.time))
+//             .attr('cy', d => { return svgHeight/2;});
+//     }
  
-    //Redraw guides
-    const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
-    const yOffset = svgHeight/2+50;
+//     //Redraw guides
+//     const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
+//     const yOffset = svgHeight/2+50;
 
-    const steps = [];
-    const oneMinuteInMS = 60000; //1minute = 60000ms
-    const maxMin = timeMax/oneMinuteInMS;
-    var i;
-    for(i=0; i<=maxMin; i+=1){
-        steps.push(i);
-    }
-    var largestMS = steps[steps.length-1] * oneMinuteInMS;
+//     const steps = [];
+//     const oneMinuteInMS = 60000; //1minute = 60000ms
+//     const maxMin = timeMax/oneMinuteInMS;
+//     var i;
+//     for(i=0; i<=maxMin; i+=1){
+//         steps.push(i);
+//     }
+//     var largestMS = steps[steps.length-1] * oneMinuteInMS;
 
-    var scaleX = d3.scaleLinear()
-        .domain([0, timeMax])
-        .range([0, guide.width]);
-    var remainedX = scaleX(timeMax - largestMS);
-    // console.log("remainedX: "+remainedX);
-    redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
-    svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
+//     var scaleX = d3.scaleLinear()
+//         .domain([0, timeMax])
+//         .range([0, guide.width]);
+//     var remainedX = scaleX(timeMax - largestMS);
+//     // console.log("remainedX: "+remainedX);
+//     redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
+//     svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
 
-}
+// }
 
-//TODO: Implement play
-function play() {
-    console.log('play through time');
-    var i;
-    for(i=0; i<Math.round(timeMax/1000); i++) {
-        // timeSlider.value(i);
-        setTimeout(function(){
-            filterByTime(i);
-            console.log(i);
-        }, 1000);
-        //NOTE: not working yet...
-    }
-}
+// // Locates Plots with duration on x axis
+// function viewByDuration()
+// {
+//     console.log('locating plots by duration.');
 
-// Locates Plots with duration on x axis
-function viewByDuration()
-{
-    console.log('locating plots by duration.');
+//     //Update the view state and the button view
+//     var isViewChanged = (currentViewOption != ViewOption.DURATION);
+//     currentViewOption = ViewOption.DURATION;
+//     d3.select('#viewOptions').selectAll('button').classed('active', false);
+//     d3.select('#viewOption-duration').classed('active', true);
 
-    //Update the view state and the button view
-    var isViewChanged = (currentViewOption != ViewOption.DURATION);
-    currentViewOption = ViewOption.DURATION;
-    d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-duration').classed('active', true);
+//     //Relocate the plots
+//     const steps = [0, 0.5, 1, 1.5, 2];
+//     const guide = { width:400, margin:50, dotSize:2, color:'gray' };
 
-    //Relocate the plots
-    const steps = [0, 0.5, 1, 1.5, 2];
-    const guide = { width:400, margin:50, dotSize:2, color:'gray' };
+//     var scaleX = d3.scaleLinear()
+//         .domain([0, d3.max(steps)])
+//         .range([guide.margin, guide.width - guide.margin]);
+//     var scaleY = d3.scaleLinear()
+//         .domain([0,3000])
+//         .range([svgHeight-70, 50]);
 
-    var scaleX = d3.scaleLinear()
-        .domain([0, d3.max(steps)])
-        .range([guide.margin, guide.width - guide.margin]);
-    var scaleY = d3.scaleLinear()
-        .domain([0,3000])
-        .range([svgHeight-70, 50]);
+//     var xOffset = svgWidth/2-guide.width/2;
 
-    var xOffset = svgWidth/2-guide.width/2;
-
-    //relocate plots
-    var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
+//     //relocate plots
+//     var plotG = d3.select('#plotG');
+//     var plots = plotG.selectAll('circle');
     
-    //Solution3. with scaleQuantize instead of using .filter()
-    var scaleQ = d3.scaleQuantize()
-        .domain([-250, 2250])
-        .range(steps);
+//     //Solution3. with scaleQuantize instead of using .filter()
+//     var scaleQ = d3.scaleQuantize()
+//         .domain([-250, 2250])
+//         .range(steps);
 
-    if(isViewChanged) {
-        //transition effect for changing view
-        plots.transition()
-            .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeElastic).duration(2000)
-            .style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
-    } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
-    }
-    //TODO: Solve the problem of plots not placed from the bottom
+//     if(isViewChanged) {
+//         //transition effect for changing view
+//         plots.transition()
+//             .delay(function(d,i){ return i * delayValue; }) 
+//             .ease(d3.easeElastic).duration(2000)
+//             .style('visibility','visible')
+//             .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
+//             .attr('cy', (d,i) => scaleY(i));
+//     } else {
+//         //just resizing the svg
+//         plots.style('visibility','visible')
+//             .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
+//             .attr('cy', (d,i) => scaleY(i));
+//     }
+//     //TODO: Solve the problem of plots not placed from the bottom
         
-    //TODO: Show count for each steps?
+//     //TODO: Show count for each steps?
 
+//     //Redraw guides
+//     redrawXAxis('Fixation Duration', 's', steps);
 
-    // //Solution1. filter() with ForEach loop
-    // //this only shows the plots of first step (steps[0]) why??
-    // var inclusiveVal = (steps[1]-steps[0])/2 *1000;
-    // var start, end;
-    // var filteredPlots;
-    // steps.forEach(function(step) {
-    //     step = step * 1000;
-    //     start = step - inclusiveVal;
-    //     end = step + inclusiveVal;
-    //     console.log(`moving dots for duration ${step}s (${start} ~ ${end}ms)`);
+// }
+
+// // Locates Plots with pupil dilation on x axis
+// function viewByPupilDilation()
+// {
+//     console.log('locating plots by pupil dilation.');
+
+//     //Update the view state and the button view
+//     var isViewChanged = (currentViewOption != ViewOption.DILATION);
+//     currentViewOption = ViewOption.DILATION;
+//     d3.select('#viewOptions').selectAll('button').classed('active', false);
+//     d3.select('#viewOption-pupil').classed('active', true);
+
+//     //Relocate the plots
+//     const steps = [0, 0.25, 0.5, 0.75, 1];
+//     const guide = { width:400, margin:50, dotSize:2, color:'gray' };
+
+//     var scaleX = d3.scaleLinear()
+//         .domain([0, d3.max(steps)])
+//         .range([guide.margin, guide.width - guide.margin]);
+//     var scaleY = d3.scaleLinear()
+//         .domain([0,3000])
+//         .range([svgHeight-70, 50]);
+
+//     var xOffset = svgWidth/2-guide.width/2;
+
+//     //relocate plots
+//     var plotG = d3.select('#plotG');
+//     var plots = plotG.selectAll('circle');
+
+//     //Solution3. with scaleQuantize instead of using .filter()
+//     var scaleQ = d3.scaleQuantize()
+//         .domain([-0.125, 1.125])
+//         .range(steps);
+
+//     if(isViewChanged) {
+//         //transition effect for changing view
+//         plots.transition()
+//             .delay(function(d,i){ return i * delayValue; }) 
+//             .ease(d3.easeElastic).duration(2000)
+//             .style('visibility','visible')
+//             .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
+//             .attr('cy', (d,i) => scaleY(i));
+//     } else {
+//         //just resizing the svg
+//         plots.style('visibility','visible')
+//             .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
+//             .attr('cy', (d,i) => scaleY(i));
+//     }
+//     //TODO: Solve the problem of plots not placed from the bottom
         
-    //     filteredPlots = plots.filter(function(d) {
-    //         return (d.duration >= start) && (d.duration <= end);
-    //     });
-        
-    //     filteredPlots
-    //         // .transition()
-    //         // .delay(function(d,i){ return i * delayValue; }) 
-    //         // .ease(d3.easeExp).duration(2000)
-    //         .attr('visibility','visible')
-    //         .attr('cx', scaleX(step) + xOffset)
-    //         .attr('cy', (d,i) => scaleY(i));
-    // });
-
-
-    // //Solution2. filter() with manual repetition for each steps
-    // //this works exactly as desired, but ugly code..
-    // plots.filter(function(d) {
-    //     return (d.duration >= 0) && (d.duration <= 250);
-    // })
-    //     .attr('cx', scaleX(0) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 250) && (d.duration <= 750);
-    // })
-    //     .attr('cx', scaleX(0.5) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 750) && (d.duration <= 1250);
-    // })
-    //     .attr('cx', scaleX(1) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 1250) && (d.duration <= 1750);
-    // })
-    //     .attr('cx', scaleX(1.5) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 1750);
-    // })
-    //     .attr('cx', scaleX(2) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-
-
-    //Redraw guides
-    redrawXAxis('Fixation Duration', 's', steps);
-
-}
-
-// Locates Plots with pupil dilation on x axis
-function viewByPupilDilation()
-{
-    console.log('locating plots by pupil dilation.');
-
-    //Update the view state and the button view
-    var isViewChanged = (currentViewOption != ViewOption.DILATION);
-    currentViewOption = ViewOption.DILATION;
-    d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-pupil').classed('active', true);
-
-    //Relocate the plots
-    const steps = [0, 0.25, 0.5, 0.75, 1];
-    const guide = { width:400, margin:50, dotSize:2, color:'gray' };
-
-    var scaleX = d3.scaleLinear()
-        .domain([0, d3.max(steps)])
-        .range([guide.margin, guide.width - guide.margin]);
-    var scaleY = d3.scaleLinear()
-        .domain([0,3000])
-        .range([svgHeight-70, 50]);
-
-    var xOffset = svgWidth/2-guide.width/2;
-
-    //relocate plots
-    var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
-
-    //Solution3. with scaleQuantize instead of using .filter()
-    var scaleQ = d3.scaleQuantize()
-        .domain([-0.125, 1.125])
-        .range(steps);
-
-    if(isViewChanged) {
-        //transition effect for changing view
-        plots.transition()
-            .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeElastic).duration(2000)
-            .style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
-    } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
-    }
-    //TODO: Solve the problem of plots not placed from the bottom
-        
-    //TODO: Show count for each steps?
+//     //TODO: Show count for each steps?
     
 
-    //Redraw guides
-    redrawXAxis('Pupil Dilation', 'mm', steps);
+//     //Redraw guides
+//     redrawXAxis('Pupil Dilation', 'mm', steps);
 
-}
+// }
 
 function viewByCombi()
 {
@@ -776,6 +721,8 @@ function viewByTimeAndDuration()
 
     const marginX = 50; //left&right margin of graph from the svg border
     const marginY = 50; //top&bottom margin of graph from the svg border
+    const width = svgWidth - marginX*2;
+    const height = svgHeight - marginY*2;
 
     const plotG = d3.select('#plotG');
     const plots = plotG.selectAll('circle');
@@ -791,18 +738,21 @@ function viewByTimeAndDuration()
     var yAxis = d3.axisLeft().scale(scaleY);
 
     //remove preciously drawn guide or axes
-    svg.select('#guideG').selectAll('*').remove();
-    svg.select('#axesG').remove();
+    var guideG = svg.select('#guideG');
+    guideG.selectAll('*').remove();
 
     //draw the x axis and y axis
-    var axes = svg.append('g').attr('id','axesG')
-        .classed('axis',true)
+    guideG.classed('axis',true)
         .classed('unselectable', true);
-    axes.append('g').attr('id','xAxis')
+    var xAxis = guideG.append('g').attr('id','xAxis')
         .attr("transform", `translate(0, ${svgHeight-marginY})`)
         .call(xAxis);
-    axes.append('g').attr('id','yAxis')
-        .attr("transform", "translate(50, 0)")
+    xAxis.append("text")
+        .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+        .attr("transform", `translate(${svgWidth/2},${10})`)  // centre below axis
+        .text("Time (min)").style('color','black');
+    guideG.append('g').attr('id','yAxis')
+        .attr("transform", `translate(${marginX}, 0)`)
         .call(yAxis);
 
     scaleX.domain([0, timeMax]);
@@ -814,4 +764,15 @@ function viewByTimeAndDuration()
         .attr('cy', d => scaleY(d.duration))
         .attr('r', 3);
 
+    const durationValue = d => d.duration;
+    var durationMean = d3.mean(mergedData, durationValue);
+    console.log('Duration Mean: '+durationMean.toFixed(0));
+    //Show average duration
+    var avgG = svg.select('#guideG')
+        .append('g').attr('id','avgG')
+            .attr('transform',`translate(${marginX},${scaleY(durationMean)})`)
+            .classed('avgG', true);
+    avgG.append('line').attr('x2',0)
+        .transition().delay(1000).duration(1000)
+        .attr('x2',width);
 }

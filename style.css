@@ -226,3 +226,8 @@
 .axis line, path{
     stroke: #AAA;
 }
+
+.avgG line{
+    stroke: black;
+    stroke-width: 1px;
+}
