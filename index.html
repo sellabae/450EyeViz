@@ -58,15 +58,19 @@
             <!-- View options: x-y, time, duration, or dilation -->
             <div id="viewOptions" class="btn-group btn-group-sm d-flex my-2">
                 <button id="viewOption-xy" class="btn btn-outline-secondary w-100 active"
-                        onclick="viewByXY()">x-y</button>
-                <button id="viewOption-time" class="btn btn-outline-secondary w-100"
-                        onclick="viewByTime()">time</button>
+                    onclick="viewByXY()">x-y</button>
+                <button id="viewOption-xy" class="btn btn-outline-secondary w-100 active"
+                    onclick="viewByTimeAndDuration()">time/duration/dilation</button>
+                <button id="viewOption-xy" class="btn btn-outline-secondary w-100 active"
+                    onclick="viewByTimeAndSccades()">time/sccades/event</button>
+                <!-- <button id="viewOption-time" class="btn btn-outline-secondary w-100"
+                    onclick="viewByTime()">time</button>
                 <button id="viewOption-duration" class="btn btn-outline-secondary w-100"
-                        onclick="viewByDuration()">duration</button>
+                    onclick="viewByDuration()">duration</button>
                 <button id="viewOption-pupil" class="btn btn-outline-secondary w-100"
-                        onclick="viewByPupilDilation()">dilation</button>
+                    onclick="viewByPupilDilation()">dilation</button>
                 <button id="viewOption-combi" class="btn btn-outline-secondary w-100"
-                        onclick="viewByCombi()">duration/dilation</button>
+                    onclick="viewByCombi()">duration/dilation</button> -->
             </div>
             <!-- Visualization -->
             <div id="svgDiv" class="max-width" style="height:75vh">

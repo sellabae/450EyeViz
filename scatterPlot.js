@@ -1,3 +1,5 @@
+// "use strict"
+
 //global variables
 var mergedData;
 var xMin,xMax,yMin,yMax;
@@ -19,7 +21,8 @@ var ViewOption = {
     XY: 1,
     TIME: 2,
     DURATION: 3,
-    DILATION: 4
+    DILATION: 4,
+    TIMEDURATION: 5
 };
 var currentViewOption = ViewOption.XY;
 
@@ -406,12 +409,14 @@ function viewByXY()
             .style('visibility','visible')
             // .style('opacity', basicOpacity)
             .attr('cx', d => xScale(d.x))
-            .attr('cy', d => yScale(d.y));
+            .attr('cy', d => yScale(d.y))
+            .attr('r', d => rScale(d.duration));
     } else {
         //just resizing the svg
         plots.style('visibility','visible')
             .attr('cx', d => xScale(d.x))
-            .attr('cy', d => yScale(d.y));
+            .attr('cy', d => yScale(d.y))
+            .attr('r', d => rScale(d.duration));
     }
 
     //Redraw guides
@@ -754,5 +759,59 @@ function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight
         .attr('y', 40)
         .text(label+' ('+unit+')')
         .classed('axis-label', true);
+
+}
+
+
+
+
+function viewByTimeAndDuration()
+{
+    console.log('View the line graph of time and duration.');
+    //Update the view state and the button view
+    var isViewChanged = (currentViewOption != ViewOption.TIMEDURATION);
+    currentViewOption = ViewOption.TIMEDURATION;
+    d3.select('#viewOptions').selectAll('button').classed('active', false);
+    d3.select('#viewOption-combi').classed('active', true);
+
+    const marginX = 50; //left&right margin of graph from the svg border
+    const marginY = 50; //top&bottom margin of graph from the svg border
+
+    const plotG = d3.select('#plotG');
+    const plots = plotG.selectAll('circle');
+
+    var scaleX = d3.scaleLinear()
+        .domain([0, timeMax/60000])
+        .range([marginX, svgWidth-marginX]);
+    var scaleY = d3.scaleLinear()
+        .domain([0, durationMax/1000])
+        .range([svgHeight-marginY, marginY]);
+
+    var xAxis = d3.axisBottom().scale(scaleX);
+    var yAxis = d3.axisLeft().scale(scaleY);
+
+    //remove preciously drawn guide or axes
+    svg.select('#guideG').selectAll('*').remove();
+    svg.select('#axesG').remove();
+
+    //draw the x axis and y axis
+    var axes = svg.append('g').attr('id','axesG')
+        .classed('axis',true)
+        .classed('unselectable', true);
+    axes.append('g').attr('id','xAxis')
+        .attr("transform", `translate(0, ${svgHeight-marginY})`)
+        .call(xAxis);
+    axes.append('g').attr('id','yAxis')
+        .attr("transform", "translate(50, 0)")
+        .call(yAxis);
+
+    scaleX.domain([0, timeMax]);
+    scaleY.domain([0, durationMax]);
+    plots.transition()
+        .delay(function(d,i){ return i * delayValue; }) 
+        .ease(d3.easeCubic).duration(1000)
+        .attr('cx', d => scaleX(d.time))
+        .attr('cy', d => scaleY(d.duration))
+        .attr('r', 3);
 
 }

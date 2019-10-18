@@ -219,3 +219,10 @@
     font-weight: lighter;
 	text-anchor: middle;
 }
+
+.axis text{
+    color: #AAA;
+}
+.axis line, path{
+    stroke: #AAA;
+}
