@@ -77,14 +77,8 @@ function resizeSVG(){
         case ViewOption.XY:
             viewByXY();
             break;
-        case ViewOption.TIME:
-            viewByTime();
-            break;
-        case ViewOption.DURATION:
-            viewByDuration();
-            break;
-        case ViewOption.DILATION:
-            viewByPupilDilation();
+        case ViewOption.TIMEDURATION:
+            viewByTimeAndDuration();
             break;
         default:
     }
@@ -125,7 +119,7 @@ function fetchCsvCallOthers()
         });
         mergedData = data;
         setScales(mergedData);
-        drawCircles(mergedData);
+        draw(mergedData);
         resetTime();
     });
 }
@@ -189,7 +183,7 @@ function setScales(data)
 }
 
 // Draws circle points
-function drawCircles(data)
+function draw(data)
 {
     console.log('drawing circles.');
 
@@ -244,7 +238,12 @@ function drawCircles(data)
 
         // console.log('Drawing Done!');
         
-        viewByXY();
+        
+        //initial mode to xy
+        drawXYMark();
+        currentViewOption = ViewOption.XY;
+        d3.select('#viewOptions').selectAll('button').classed('active', false);
+        d3.select('#viewOption-xy').classed('active', true);
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
@@ -417,6 +416,7 @@ function viewByXY()
     var plots = plotG.selectAll('circle');
     if(isViewChanged) {
         //transition effect for changing view
+        drawXYMark();
         plots.transition()
             .delay(function(d,i){ return i * delayValue; }) 
             .ease(d3.easeCubic).duration(1000)
@@ -432,9 +432,6 @@ function viewByXY()
             .attr('cy', d => yScale(d.y))
             .attr('r', d => rScale(d.duration));
     }
-
-    //Redraw guides
-    drawXYMark();
 
 }
 
@@ -464,249 +461,13 @@ function drawXYMark()
 
     guideG.selectAll('line').classed('axis-line',true);
     guideG.selectAll('text').classed('axis-stepText',true);
+
+    //transition
+    guideG.attr('opacity',0)
+        .transition().duration(1000)
+        .attr('opacity',1);
     
 }
-
-// // Locates plots aligned in the center line by time
-// function viewByTime()
-// {
-//     console.log('locating plots by time.');
-
-//     //Update the view state and the button view
-//     var isViewChanged = (currentViewOption != ViewOption.TIME);
-//     currentViewOption = ViewOption.TIME;
-//     d3.select('#viewOptions').selectAll('button').classed('active', false);
-//     d3.select('#viewOption-time').classed('active', true);
-    
-//     const gap = 20; //gap from the svg border
-
-//     //Relocate the plots
-//     const plotG = d3.select('#plotG');
-//     const plots = plotG.selectAll('circle');
-//     var scaleX = timeScale.range([gap, svgWidth-gap]);
-//     if(isViewChanged) {
-//         //transition effect for changing view
-//         plots.transition()
-//             .delay(function(d,i){ return i * delayValue; }) 
-//             .ease(d3.easeElastic).duration(2000)
-//             .style('visibility','visible')
-//             // .style('opacity', basicOpacity)
-//             .attr('cx', d => scaleX(d.time))
-//             .attr('cy', d => { return svgHeight/2;});
-//     } else {
-//         //just resizing the svg
-//         plots.style('visibility','visible')
-//             .attr('cx', d => scaleX(d.time))
-//             .attr('cy', d => { return svgHeight/2;});
-//     }
- 
-//     //Redraw guides
-//     const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
-//     const yOffset = svgHeight/2+50;
-
-//     const steps = [];
-//     const oneMinuteInMS = 60000; //1minute = 60000ms
-//     const maxMin = timeMax/oneMinuteInMS;
-//     var i;
-//     for(i=0; i<=maxMin; i+=1){
-//         steps.push(i);
-//     }
-//     var largestMS = steps[steps.length-1] * oneMinuteInMS;
-
-//     var scaleX = d3.scaleLinear()
-//         .domain([0, timeMax])
-//         .range([0, guide.width]);
-//     var remainedX = scaleX(timeMax - largestMS);
-//     // console.log("remainedX: "+remainedX);
-//     redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
-//     svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
-
-// }
-
-// // Locates Plots with duration on x axis
-// function viewByDuration()
-// {
-//     console.log('locating plots by duration.');
-
-//     //Update the view state and the button view
-//     var isViewChanged = (currentViewOption != ViewOption.DURATION);
-//     currentViewOption = ViewOption.DURATION;
-//     d3.select('#viewOptions').selectAll('button').classed('active', false);
-//     d3.select('#viewOption-duration').classed('active', true);
-
-//     //Relocate the plots
-//     const steps = [0, 0.5, 1, 1.5, 2];
-//     const guide = { width:400, margin:50, dotSize:2, color:'gray' };
-
-//     var scaleX = d3.scaleLinear()
-//         .domain([0, d3.max(steps)])
-//         .range([guide.margin, guide.width - guide.margin]);
-//     var scaleY = d3.scaleLinear()
-//         .domain([0,3000])
-//         .range([svgHeight-70, 50]);
-
-//     var xOffset = svgWidth/2-guide.width/2;
-
-//     //relocate plots
-//     var plotG = d3.select('#plotG');
-//     var plots = plotG.selectAll('circle');
-    
-//     //Solution3. with scaleQuantize instead of using .filter()
-//     var scaleQ = d3.scaleQuantize()
-//         .domain([-250, 2250])
-//         .range(steps);
-
-//     if(isViewChanged) {
-//         //transition effect for changing view
-//         plots.transition()
-//             .delay(function(d,i){ return i * delayValue; }) 
-//             .ease(d3.easeElastic).duration(2000)
-//             .style('visibility','visible')
-//             .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-//             .attr('cy', (d,i) => scaleY(i));
-//     } else {
-//         //just resizing the svg
-//         plots.style('visibility','visible')
-//             .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-//             .attr('cy', (d,i) => scaleY(i));
-//     }
-//     //TODO: Solve the problem of plots not placed from the bottom
-        
-//     //TODO: Show count for each steps?
-
-//     //Redraw guides
-//     redrawXAxis('Fixation Duration', 's', steps);
-
-// }
-
-// // Locates Plots with pupil dilation on x axis
-// function viewByPupilDilation()
-// {
-//     console.log('locating plots by pupil dilation.');
-
-//     //Update the view state and the button view
-//     var isViewChanged = (currentViewOption != ViewOption.DILATION);
-//     currentViewOption = ViewOption.DILATION;
-//     d3.select('#viewOptions').selectAll('button').classed('active', false);
-//     d3.select('#viewOption-pupil').classed('active', true);
-
-//     //Relocate the plots
-//     const steps = [0, 0.25, 0.5, 0.75, 1];
-//     const guide = { width:400, margin:50, dotSize:2, color:'gray' };
-
-//     var scaleX = d3.scaleLinear()
-//         .domain([0, d3.max(steps)])
-//         .range([guide.margin, guide.width - guide.margin]);
-//     var scaleY = d3.scaleLinear()
-//         .domain([0,3000])
-//         .range([svgHeight-70, 50]);
-
-//     var xOffset = svgWidth/2-guide.width/2;
-
-//     //relocate plots
-//     var plotG = d3.select('#plotG');
-//     var plots = plotG.selectAll('circle');
-
-//     //Solution3. with scaleQuantize instead of using .filter()
-//     var scaleQ = d3.scaleQuantize()
-//         .domain([-0.125, 1.125])
-//         .range(steps);
-
-//     if(isViewChanged) {
-//         //transition effect for changing view
-//         plots.transition()
-//             .delay(function(d,i){ return i * delayValue; }) 
-//             .ease(d3.easeElastic).duration(2000)
-//             .style('visibility','visible')
-//             .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-//             .attr('cy', (d,i) => scaleY(i));
-//     } else {
-//         //just resizing the svg
-//         plots.style('visibility','visible')
-//             .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-//             .attr('cy', (d,i) => scaleY(i));
-//     }
-//     //TODO: Solve the problem of plots not placed from the bottom
-        
-//     //TODO: Show count for each steps?
-    
-
-//     //Redraw guides
-//     redrawXAxis('Pupil Dilation', 'mm', steps);
-
-// }
-
-function viewByCombi()
-{
-    console.log('relocating plots by x: duration, y: dilation.');
-
-    //Update the 'duration/dilation' button pressed
-    d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-combi').classed('active', true);
-
-    //TODO: duration on the x axis (size)
-    //TODO: dilationon on the y axis (color)
-    const width = 500;
-    const height = 300;
-
-    const steps = [0, 0.5, 1, 1.5, 2];
-    redrawXAxis('Fixation Duration', 's', steps, width);
-    //TODO: draw YAxis
-
-    const plotG = d3.select('#plotG');
-    const plots = plotG.selectAll('circle');
-
-    const scaleX = d3.scaleLinear()
-        .domain([0,durationMax])
-        .range([0,width]);
-    const scaleY = d3.scaleLinear()
-        .domain([0,pupilMax])
-        .range([height,0]);
-    const xOffset = svgWidth/2-width/2;
-    const yOffset = svgHeight-height -80;
-    
-    plots.transition()
-        .delay(function(d,i){ return 0.2*i; }) 
-        .ease(d3.easeCubic).duration(1000)
-        .attr('cx', d => scaleX(d.duration) + xOffset)
-        .attr('cy', d => scaleY(d.avg_dilation) + yOffset);
-
-}
-
-// Helps relocateByDuration() and relocateByPupilDilation() to redraw guideG in svg
-function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight-55, margin=50)
-{
-    var scaleX = d3.scaleLinear()
-        .domain([0, d3.max(steps)])
-        .range([margin, width-margin]);
-    
-    //Redraw guides
-    const guideG = svg.select('#guideG');
-    guideG.selectAll('*').remove();    //remove all previously drawn guides
-    guideG.attr('transform',`translate(${svgWidth/2-width/2},${yOffset})`);
-    guideG.append('line')
-        .attr('x2', width)
-        .classed('axis-line', true);
-    guideG.selectAll('circle')
-            .data(steps)
-        .enter().append('circle')
-            .attr('cx', d => scaleX(d))
-            .classed('axis-stepDot', true);
-    guideG.selectAll('text')
-            .data(steps)
-        .enter().append('text')
-            .attr('x', d => scaleX(d))
-            .attr('y', 20)
-            .text(d => {return d;})
-            .classed('axis-stepText', true);
-    guideG.append('text')
-        .attr('x', width/2)
-        .attr('y', 40)
-        .text(label+' ('+unit+')')
-        .classed('axis-label', true);
-
-}
-
 
 
 
@@ -737,42 +498,56 @@ function viewByTimeAndDuration()
     var xAxis = d3.axisBottom().scale(scaleX);
     var yAxis = d3.axisLeft().scale(scaleY);
 
-    //remove preciously drawn guide or axes
-    var guideG = svg.select('#guideG');
-    guideG.selectAll('*').remove();
+    if(isViewChanged)
+    {
+        //remove preciously drawn guide or axes
+        var guideG = svg.select('#guideG');
+        guideG.selectAll('*').remove();
 
-    //draw the x axis and y axis
-    guideG.classed('axis',true)
-        .classed('unselectable', true);
-    var xAxis = guideG.append('g').attr('id','xAxis')
-        .attr("transform", `translate(0, ${svgHeight-marginY})`)
-        .call(xAxis);
-    xAxis.append("text")
-        .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
-        .attr("transform", `translate(${svgWidth/2},${10})`)  // centre below axis
-        .text("Time (min)").style('color','black');
-    guideG.append('g').attr('id','yAxis')
-        .attr("transform", `translate(${marginX}, 0)`)
-        .call(yAxis);
+        //draw the x axis and y axis
+        guideG.classed('axis',true)
+            .classed('unselectable', true);
+        var xAxis = guideG.append('g').attr('id','xAxis')
+            .attr("transform", `translate(0, ${svgHeight-marginY})`)
+            .call(xAxis);
+        xAxis.append("text")
+            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            .attr("transform", `translate(${svgWidth/2},${10})`)  // centre below axis
+            .text("Time (min)").style('color','black');
+        guideG.append('g').attr('id','yAxis')
+            .attr("transform", `translate(${marginX}, 0)`)
+            .call(yAxis);
+        //transition
+        guideG.attr('opacity',0)
+            .transition().duration(1000)
+            .attr('opacity',1);
 
-    scaleX.domain([0, timeMax]);
-    scaleY.domain([0, durationMax]);
-    plots.transition()
-        .delay(function(d,i){ return i * delayValue; }) 
-        .ease(d3.easeCubic).duration(1000)
-        .attr('cx', d => scaleX(d.time))
-        .attr('cy', d => scaleY(d.duration))
-        .attr('r', 3);
+        //move the plots
+        scaleX.domain([0, timeMax]);
+        scaleY.domain([0, durationMax]);
+        plots.transition()
+            .delay(function(d,i){ return i * delayValue; }) 
+            .ease(d3.easeCubic).duration(1000)
+            .attr('cx', d => scaleX(d.time))
+            .attr('cy', d => scaleY(d.duration))
+            .attr('r', 3);
 
-    const durationValue = d => d.duration;
-    var durationMean = d3.mean(mergedData, durationValue);
-    console.log('Duration Mean: '+durationMean.toFixed(0));
-    //Show average duration
-    var avgG = svg.select('#guideG')
-        .append('g').attr('id','avgG')
-            .attr('transform',`translate(${marginX},${scaleY(durationMean)})`)
-            .classed('avgG', true);
-    avgG.append('line').attr('x2',0)
-        .transition().delay(1000).duration(1000)
-        .attr('x2',width);
+        //Calculate the mean duration
+        const durationValue = d => d.duration;
+        var durationMean = d3.mean(mergedData, durationValue);
+        console.log('Duration Mean: '+durationMean.toFixed(0));
+        //Show the mean duration
+        var avgG = svg.select('#guideG')
+            .append('g').attr('id','avgG')
+                .attr('transform',`translate(${marginX},${scaleY(durationMean)})`)
+                .classed('avgG', true);
+        avgG.append('line').attr('x2',0)
+            .transition().delay(1000).duration(1000)
+            .attr('x2',width);
+    }
+    else
+    {
+        console.log('view by time/duratoin resizing...');
+        //TODO: handle resizing
+    }
 }
