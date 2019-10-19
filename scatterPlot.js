@@ -19,10 +19,8 @@ var svgRatio = 4/6;
 //view option
 var ViewOption = {
     XY: 1,
-    TIME: 2,
-    DURATION: 3,
-    DILATION: 4,
-    TIMEDURATION: 5
+    TIMEDURATION: 2,
+    TIMESACCADE: 3
 };
 var currentViewOption = ViewOption.XY;
 

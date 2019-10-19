@@ -6,19 +6,18 @@
     <title>Eye-Tracking Data Visualization</title>
     <link id="favicon" rel="shortcut icon" href="assets/favicon.ico"/>
     
-<!-- Libraries -->
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <!-- jQuery and Ajax -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-<!-- Layout and Styling -->
     <!-- Bootstrap -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- jQuery and Ajax -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
 
 <!-- JavaScript file added at the bottom of the body -->
 </head>
@@ -63,14 +62,6 @@
                     onclick="viewByTimeAndDuration()">time/duration/dilation</button>
                 <button id="viewOption-xy" class="btn btn-outline-secondary w-100 active"
                     onclick="viewByTimeAndSccades()">time/sccades/event</button>
-                <!-- <button id="viewOption-time" class="btn btn-outline-secondary w-100"
-                    onclick="viewByTime()">time</button>
-                <button id="viewOption-duration" class="btn btn-outline-secondary w-100"
-                    onclick="viewByDuration()">duration</button>
-                <button id="viewOption-pupil" class="btn btn-outline-secondary w-100"
-                    onclick="viewByPupilDilation()">dilation</button>
-                <button id="viewOption-combi" class="btn btn-outline-secondary w-100"
-                    onclick="viewByCombi()">duration/dilation</button> -->
             </div>
             <!-- Visualization -->
             <div id="svgDiv" class="max-width" style="height:75vh">
