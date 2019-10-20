@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 window.addEventListener('resize', resizeSVG);
-
 function resizeSVG(){
     //update the svg size
     svgWidth = +svgDiv.offsetWidth;
@@ -118,7 +117,7 @@ function fetchCsvCallOthers()
         });
         mergedData = data;
         setScales(mergedData);
-        draw(mergedData);
+        render(mergedData);
         resetTime();
     });
 }
@@ -179,14 +178,14 @@ function setScales(data)
         // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
     timeScale = d3.scaleLinear()
         .domain([0, timeMax])
-        .range([0, 100])
+        .range([0, 10])
         .nice();
         
     timeSlider.attr('max',timeMax/1000);    //set time slider range
 }
 
 // Draws circle points
-function draw(dataset)
+function render(dataset)
 {
     console.log('drawing circles.');
 
@@ -200,10 +199,11 @@ function draw(dataset)
         
     var plotG = svg.select('#plotG');
 
+    // Bind dataset to lines (for saccades)
     var saccades = plotG.selectAll("line")
         .data(dataset, function(d) {return d;}); //semantic binding
     saccades.enter().append("line")
-        .attr("class", "saccade")
+        .classed('saccade', true)
         .attr('x1', function(d,i){
             var prev = (i>0) ? dataset[i-1] : d;
             return xScale(prev.x);
@@ -221,19 +221,21 @@ function draw(dataset)
             })
         .attr("visibility", "visible");
 
-    // Bind dataset to circles
+    // Bind dataset to circles (for fixations)
     var fixations = plotG.selectAll("circle")
         .data(dataset, function(d) { return d; }); //semantic binding
     // Add circles
     fixations.enter().append("circle")
+        .classed('fixation', true)
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => rScale(d.duration))
         .attr("fill", d => colorScale(d.avg_dilation))
         .attr("visibility","hidden")
-        .on('mouseover', function(d, i) {
-            const msg = "<b>number</b>   " + d.number + "<br>"
+        .on('mouseover', function(d) {
+            const msg = "<b>fixation #" + d.number + "</b><br>"
                       + "<b>time</b>     " + (d.time/1000).toFixed(2) + "s <br>"
+                      + "<b>x</b>:" + d.x+", <b>y</b>:"+d.y + "<br>"
                       + "<b>duration</b> " + d.duration + "ms <br>"
                       + "<b>dilation</b> " + d.avg_dilation.toFixed(2) + "mm";
             tooltip.html(msg);
@@ -261,6 +263,41 @@ function draw(dataset)
         currentViewOption = ViewOption.XY;
         d3.select('#viewOptions').selectAll('button').classed('active', false);
         d3.select('#viewOption-xy').classed('active', true);
+}
+
+//update the location of each fixation and saccade
+function updateXYLocations()
+{
+    var fixations = svg.select('#plotG').selectAll('circle');
+    fixations
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
+        .attr("r", d => rScale(d.duration));
+    
+    var saccades = svg.select('#plotG').selectAll('line');
+    saccades
+        .attr('x1', function(d,i){
+            var prev = (i>0) ? mergedData[i-1] : d;
+            return xScale(prev.x);
+        })
+        .attr('y1', function(d,i){
+            var prev = (i>0) ? mergedData[i-1] : d;
+            return yScale(prev.y);
+        })
+        .attr('x2', d => xScale(d.x))
+        .attr('y2', d => yScale(d.y));
+}
+
+function showSaccades(checked)
+{
+    var saccades = svg.select('#plotG').selectAll('line');
+    if(checked) {
+        console.log('show saccades');
+        saccades.style('visibility', 'visible');
+    } else {
+        console.log('hide saccades');
+        saccades.style('visibility', 'hidden');
+    }
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
@@ -431,6 +468,12 @@ function viewByXY()
     //Relocate the fixations
     var plotG = d3.select('#plotG');
     var fixations = plotG.selectAll('circle');
+    var saccades = plotG.selectAll('line');
+    var saccadeCheckbox = document.getElementById('saccadeCheckbox');
+    saccadeCheckbox.checked = true;
+    saccadeCheckbox.disabled = false;
+
+
     if(isViewChanged) {
         //transition effect for changing view
         drawXYMark();
@@ -442,12 +485,19 @@ function viewByXY()
             .attr('cx', d => xScale(d.x))
             .attr('cy', d => yScale(d.y))
             .attr('r', d => rScale(d.duration));
+        
+        saccades.transition()
+            .delay(1000) 
+            .style('visibility','visible')
+            .style('opacity',0)
+            .transition().duration(1000)
+            .style('opacity',0.5);
+        
     } else {
-        //just resizing the svg
+        //just resizing the svg. update the locations!
+        updateXYLocations();
         fixations.style('visibility','visible')
-            .attr('cx', d => xScale(d.x))
-            .attr('cy', d => yScale(d.y))
-            .attr('r', d => rScale(d.duration));
+        saccades.style('visibility','visible');
     }
 
 }
@@ -495,15 +545,22 @@ function viewByTimeAndDuration()
     var isViewChanged = (currentViewOption != ViewOption.TIMEDURATION);
     currentViewOption = ViewOption.TIMEDURATION;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-combi').classed('active', true);
+    d3.select('#viewOption-timeduration').classed('active', true);
 
     const marginX = 50; //left&right margin of graph from the svg border
-    const marginY = 50; //top&bottom margin of graph from the svg border
+    // const marginY = 200; //top&bottom margin of graph from the svg border
     const width = svgWidth - marginX*2;
-    const height = svgHeight - marginY*2;
+    const height = 200;
+    const marginY = (svgHeight-height)/2;
 
     const plotG = d3.select('#plotG');
     const fixations = plotG.selectAll('circle');
+    const saccades = plotG.selectAll('line');
+    saccades.transition().duration(500)
+        .style('opacity',0).style('visiblity','hidden');
+    const saccadeCheckbox = document.getElementById('saccadeCheckbox');
+    saccadeCheckbox.checked = false;
+    saccadeCheckbox.disabled = true;
 
     var scaleX = d3.scaleLinear()
         .domain([0, timeMax/60000])
@@ -542,7 +599,8 @@ function viewByTimeAndDuration()
         //move the fixations
         scaleX.domain([0, timeMax]);
         scaleY.domain([0, durationMax]);
-        fixations.transition()
+        fixations.style('visibility','visible')
+            .transition()
             .delay(function(d,i){ return i * delayValue; }) 
             .ease(d3.easeCubic).duration(1000)
             .attr('cx', d => scaleX(d.time))

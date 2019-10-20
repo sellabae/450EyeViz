@@ -44,16 +44,22 @@
     /* border: 1px solid #EEE; */
     border-radius: 3px;
 }
-#svgDiv #plotG circle {
+.fixation {
     opacity: 0.8;
 }
-#svgDiv #plotG circle:hover {
+.fixation:hover {
     opacity: 1;
     stroke: white;
     stroke-width: 1.5px;
     /* NOTE: drop shadow not working.. why? */
     -webkit-filter: drop-shadow(0 0 0.75rem red);
     filter: drop-shadow(0 0 0.75rem red);  
+}
+.saccade {
+    fill: none;
+    stroke: rgb(180, 180, 180);
+    stroke-width: 1px;
+    opacity: 0.5;
 }
 .tooltipDiv{
     line-height: 1.2;
@@ -230,11 +236,4 @@
 .avgG line{
     stroke: black;
     stroke-width: 1px;
-}
-
-.saccade {
-    fill: none;
-    stroke: darkgray;
-    stroke-width: 1px;
-    opacity: 0.5;
 }
