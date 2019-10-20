@@ -89,7 +89,12 @@
             </div>
             <!-- Legends -->
             <div class="h-50 row p-0 m-0">
-                <div class="col-12 p-0">
+                <div class="col-12 p-0 mb-4">
+                    <div class="form-check">
+                        <input id="convexhullCheckbox" type="checkbox" class="form-check-input"
+                            onclick="showConvexhull(this.checked)">
+                        <label class="form-check-label" for="showSaccades">convex hull</label>
+                    </div>
                     <div class="form-check">
                         <input id="saccadeCheckbox" type="checkbox" class="form-check-input"
                             onclick="showSaccades(this.checked)" checked>
@@ -115,7 +120,7 @@
                     </div>
                 </div>
                 <div class="col-12 m-0 p-0 align-left">
-                    <button class="btn btn-light btn-sm" onclick="clearAllFilters()">clear filter</button>
+                    <button class="btn btn-light btn-sm" onclick="clearAllFilters()">Clear filters</button>
                 </div>
             </div>
         </div>

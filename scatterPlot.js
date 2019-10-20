@@ -4,6 +4,8 @@
 var mergedData;
 var xMin,xMax,yMin,yMax;
 var durationMin,durationMax,pupilMin,pupilMax,timeMin,timeMax;
+var vertices = [];  //to draw convex hull
+
 //scales
 var xScale, yScale, timeScale;
 var rScale = d3.scaleLinear()
@@ -11,6 +13,7 @@ var rScale = d3.scaleLinear()
 var colorScale = d3.scaleLinear()
     .range(['#0066ff', '#d0ff00', '#f00000'])
     .interpolate(d3.interpolateHcl);
+
 //svg
 var svgDiv;
 var svg, svgWidth, svgHeight;
@@ -37,6 +40,7 @@ var highlightOpacity = 0.8;
 var mutedOpacity = 0.01;
 
 const delayValue = 0.3;
+
 
 
 // Initial document setup
@@ -107,13 +111,13 @@ function fetchCsvCallOthers()
     d3.csv(file)
     .then(function(data){
         //converting all rows to int
-        data.forEach(function(d) {
+        data.forEach(function(d,i) {
             d.number = +d.number;
             d.time = +d.time;
             d.duration = +d.duration;
             d.x = +d.x;
             d.y = +d.y;
-            // d.avg_dilation = +d.avg_dilation;    //didn't convert to number to detect null value!
+            // d.avg_dilation = +d.avg_dilation;    //not convert to number in order to detect nan value!
         });
         mergedData = data;
         setScales(mergedData);
@@ -199,6 +203,20 @@ function render(dataset)
         
     var plotG = svg.select('#plotG');
 
+    
+    var convexhull = plotG.append("path")
+        .attr('id','convexhull')
+        .attr("class", "hull");
+    //put scaled d.x and d.y into vertices
+    mergedData.forEach(function(d,i){
+        vertices[i] = [xScale(d.x), yScale(d.y)];   //for convex hull
+    });
+    convexhull.datum(d3.polygonHull(vertices))
+        .attr("d", function(d) { console.log(d.join('L')); return "M" + d.join("L") + "Z"; });
+        
+    showConvexhull(false);
+    showSaccades(true);
+
     // Bind dataset to lines (for saccades)
     var saccades = plotG.selectAll("line")
         .data(dataset, function(d) {return d;}); //semantic binding
@@ -234,7 +252,6 @@ function render(dataset)
         .attr("fill", function(d){
             return (d.avg_dilation=="") ? 'darkgray' : colorScale(+d.avg_dilation);
         })
-        .attr("visibility","hidden")
         .on('mouseover', function(d) {
             const msg = "<b>#" + d.number + "</b><br>"
                       + "<b>time</b>     " + formatToMinuteSecond(d.time) + "<br>"
@@ -255,6 +272,7 @@ function render(dataset)
             tooltip.style("visibility", "hidden");
             d3.select('#details').html('');
         })
+        .attr("visibility","hidden")
         .transition()
             .delay(function(d, i){
                 return timeScale(i*d.time);
@@ -292,15 +310,46 @@ function updateXYLocations()
         .attr('y2', d => yScale(d.y));
 }
 
-function showSaccades(checked)
+function showConvexhull(state)
+{
+    var convexhull = svg.select('#convexhull');
+    var checkbox = document.getElementById('convexhullCheckbox');
+    if(state == true) {
+        console.log('show convexhull');
+        convexhull.style('visibility', 'visible');
+        checkbox.disabled = false;
+        checkbox.checked = true;
+    } else if(state == false) {
+        console.log('hide convexhull');
+        convexhull.style('visibility', 'hidden');
+        checkbox.disabled = false;
+        checkbox.checked = false;
+    } else if(state == "disable") {
+        convexhull.style('visibility', 'hidden');
+        checkbox.disabled = true;
+        checkbox.checked = false;
+    }
+}
+
+function showSaccades(state)
 {
     var saccades = svg.select('#plotG').selectAll('line');
-    if(checked) {
+    var checkbox = document.getElementById('saccadeCheckbox');
+
+    if(state == true) {
         console.log('show saccades');
         saccades.style('visibility', 'visible');
-    } else {
+        checkbox.disabled = false;
+        checkbox.checked = true;
+    } else if(state == false) {
         console.log('hide saccades');
         saccades.style('visibility', 'hidden');
+        checkbox.disabled = false;
+        checkbox.checked = false;
+    } else if(state == "disable") {
+        saccades.style('visibility', 'hidden');
+        checkbox.disabled = true;
+        checkbox.checked = false;
     }
 }
 
@@ -308,6 +357,9 @@ function showSaccades(checked)
 // Filters fixations by feature
 function filterByFeature(feature, val, step)
 {
+    showSaccades("disable");
+    showConvexhull("disable");
+
     if ( !(feature=='duration' || feature=='avg_dilation') ) {
         console.log('not existing feature '+feature);
         return;
@@ -345,6 +397,8 @@ function formatToMinuteSecond(milliSeconds) {
 }
 
 function filterByTime(val) {
+    showConvexhull('disable');
+
     timeSlider.attr('value', val);
     var milliSeconds = val * 1000;
     updateTimeLabel(formatToMinuteSecond(milliSeconds));
@@ -361,13 +415,26 @@ function filterByTime(val) {
             return (d.time <= milliSeconds);
         })
         .style('visibility', 'visible');
+
+    if(document.getElementById('saccadeCheckbox').checked == true)
+    {
+        svg.select('#plotG').selectAll('line')
+            .style('visibility', 'hidden')
+            .filter(function(d) {
+                return (d.time <= milliSeconds);
+            })
+            .style('visibility', 'visible');
+    }
+
 }
 
 // Removes filter effect when double clicked on document
 function clearAllFilters() { 
     console.log('clearing all filters.');
+    showSaccades(false);
+    showConvexhull(false);
     svg.selectAll('circle')
-    .style('opacity', basicOpacity);
+        .style('opacity', basicOpacity);
     //TODO: Clear the marks on the legend sliders
 };
 
@@ -575,7 +642,7 @@ function viewByTimeAndDuration()
         .range([svgHeight-marginY, marginY]);
 
     var xAxis = d3.axisBottom().scale(scaleX);
-    var yAxis = d3.axisLeft().scale(scaleY);
+    var yAxis = d3.axisLeft().scale(scaleY).ticks(5);
 
     var guideG = svg.select('#guideG');
     if(isViewChanged)
