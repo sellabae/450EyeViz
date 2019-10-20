@@ -109,6 +109,7 @@ function fetchCsvCallOthers()
     .then(function(data){
         //converting all rows to int
         data.forEach(function(d) {
+            d.number = +d.number;
             d.time = +d.time;
             d.duration = +d.duration;
             d.x = +d.x;
@@ -125,11 +126,15 @@ function fetchCsvCallOthers()
 // Returns file by checking which data set to load from radio buttons
 function dataSetToLoad()
 {
+    d3.select('#dataOption').selectAll('label').classed('active', false);
+    
     if(document.getElementById("treeRadio").checked) {
         console.log('tree data selected.');
+        d3.select('#treeBtn').classed('active', true);
         return "./data_preprocessed/merged_dilation_fixation_tree.csv";
     } else {
         console.log('graph data selected.');
+        d3.select('#graphBtn').classed('active', true);
         return "./data_preprocessed/merged_dilation_fixation_graph.csv";
     }
 }
@@ -173,15 +178,15 @@ function setScales(data)
         // .domain([0, (pupilMin+pupilMax)/2, pupilMax])   //show the distribution as it is
         // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
     timeScale = d3.scaleLinear()
-        .domain([timeMin, timeMax])
-        .range([0, 10])
+        .domain([0, timeMax])
+        .range([0, 100])
         .nice();
         
     timeSlider.attr('max',timeMax/1000);    //set time slider range
 }
 
 // Draws circle points
-function draw(data)
+function draw(dataset)
 {
     console.log('drawing circles.');
 
@@ -194,18 +199,41 @@ function draw(data)
         .text("");
         
     var plotG = svg.select('#plotG');
-    // Bind data to circles
-    var plots = plotG.selectAll("circle")
-        .data(data, function(d) { return d; }); //semantic binding
+
+    var saccades = plotG.selectAll("line")
+        .data(dataset, function(d) {return d;}); //semantic binding
+    saccades.enter().append("line")
+        .attr("class", "saccade")
+        .attr('x1', function(d,i){
+            var prev = (i>0) ? dataset[i-1] : d;
+            return xScale(prev.x);
+        })
+        .attr('y1', function(d,i){
+            var prev = (i>0) ? dataset[i-1] : d;
+            return yScale(prev.y);
+        })
+        .attr('x2', d => xScale(d.x))
+        .attr('y2', d => yScale(d.y))
+        .attr('visibility','hidden')
+        .transition()
+            .delay(function(d, i){
+                return timeScale(i*d.time);
+            })
+        .attr("visibility", "visible");
+
+    // Bind dataset to circles
+    var fixations = plotG.selectAll("circle")
+        .data(dataset, function(d) { return d; }); //semantic binding
     // Add circles
-    plots.enter().append("circle")
+    fixations.enter().append("circle")
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => rScale(d.duration))
         .attr("fill", d => colorScale(d.avg_dilation))
         .attr("visibility","hidden")
         .on('mouseover', function(d, i) {
-            const msg = "<b>time</b> " + (d.time/1000).toFixed(2) + "s <br>"
+            const msg = "<b>number</b>   " + d.number + "<br>"
+                      + "<b>time</b>     " + (d.time/1000).toFixed(2) + "s <br>"
                       + "<b>duration</b> " + d.duration + "ms <br>"
                       + "<b>dilation</b> " + d.avg_dilation.toFixed(2) + "mm";
             tooltip.html(msg);
@@ -221,20 +249,11 @@ function draw(data)
             tooltip.style("visibility", "hidden");
             d3.select('#details').html('');
         })
-        // .transition()
-        // .delay(function(d, i){
-            // console.log(d.time/1000);
-            // timeSlider.attr('value',d.time/1000);
-            // updateTimeLabel(d.time/1000);
-            // return timeScale(i*d.time);
-        // })
+        .transition()
+            .delay(function(d, i){
+                return timeScale(i*d.time);
+            })
         .attr("visibility", "visible");
-        // .transition().duration( (d,i) => {
-        //     return timeScale(i*d.duration);
-        // })
-        // .attr('r', rScale(d.duration));
-
-        // console.log('Drawing Done!');
         
         
         //initial mode to xy
@@ -245,7 +264,7 @@ function draw(data)
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
-// Filters plots by feature
+// Filters fixations by feature
 function filterByFeature(feature, val, step)
 {
     if ( !(feature=='duration' || feature=='avg_dilation') ) {
@@ -394,10 +413,10 @@ function play() {
 }
 
 
-// Locates plots back to its x,y coordinates
+// Locates fixations back to its x,y coordinates
 function viewByXY()
 {
-    console.log('locating plots by x-y.');
+    console.log('locating fixations by x-y.');
 
     //Update the view state and the button view
     var isViewChanged = (currentViewOption != ViewOption.XY);
@@ -409,13 +428,13 @@ function viewByXY()
     xScale.range([0+20, svgWidth-50]);
     yScale.range([0+20, svgHeight-50]);
 
-    //Relocate the plots
+    //Relocate the fixations
     var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
+    var fixations = plotG.selectAll('circle');
     if(isViewChanged) {
         //transition effect for changing view
         drawXYMark();
-        plots.transition()
+        fixations.transition()
             .delay(function(d,i){ return i * delayValue; }) 
             .ease(d3.easeCubic).duration(1000)
             .style('visibility','visible')
@@ -425,7 +444,7 @@ function viewByXY()
             .attr('r', d => rScale(d.duration));
     } else {
         //just resizing the svg
-        plots.style('visibility','visible')
+        fixations.style('visibility','visible')
             .attr('cx', d => xScale(d.x))
             .attr('cy', d => yScale(d.y))
             .attr('r', d => rScale(d.duration));
@@ -484,7 +503,7 @@ function viewByTimeAndDuration()
     const height = svgHeight - marginY*2;
 
     const plotG = d3.select('#plotG');
-    const plots = plotG.selectAll('circle');
+    const fixations = plotG.selectAll('circle');
 
     var scaleX = d3.scaleLinear()
         .domain([0, timeMax/60000])
@@ -520,10 +539,10 @@ function viewByTimeAndDuration()
             .transition().duration(1000)
             .attr('opacity',1);
 
-        //move the plots
+        //move the fixations
         scaleX.domain([0, timeMax]);
         scaleY.domain([0, durationMax]);
-        plots.transition()
+        fixations.transition()
             .delay(function(d,i){ return i * delayValue; }) 
             .ease(d3.easeCubic).duration(1000)
             .attr('cx', d => scaleX(d.time))

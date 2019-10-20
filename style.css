@@ -27,11 +27,11 @@
 }
 .btn-secondary {
     background-color: #999ba1;
-    border-color: white;
+    /* border-color: white; */
 }
 .btn-secondary:hover{
     background-color: #7c7c83;
-    border-color: white;
+    /* border-color: white; */
 }
 /* .btn:focus, .btn:active:focus, .btn.active:focus{
     outline:none;
@@ -230,4 +230,11 @@
 .avgG line{
     stroke: black;
     stroke-width: 1px;
+}
+
+.saccade {
+    fill: none;
+    stroke: darkgray;
+    stroke-width: 1px;
+    opacity: 0.5;
 }

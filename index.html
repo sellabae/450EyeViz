@@ -37,13 +37,13 @@
         </div>
         <!-- Data options: Tree or Graph -->
         <div class="col-md-3 col-sm-3 col-5 px-0 pl-md-4 text-md-left text-right">
-            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-secondary">
+            <div id="dataOption" class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label id="treeBtn" class="btn btn-secondary">
                     <input type="radio" name="dataOptions" id="treeRadio" value="tree" autocomplete="off"
                         onclick="fetchCsvCallOthers()" checked>
                     Tree
                 </label>
-                <label class="btn btn-secondary">
+                <label id="graphBtn" class="btn btn-secondary">
                     <input type="radio" name="dataOptions" id="graphRadio" value="graph" autocomplete="off"
                         onclick="fetchCsvCallOthers()">
                     Graph
