@@ -89,7 +89,7 @@ function resetTime() {
     maxTimeInMs = Math.round(timeMax/1000);
     timeSlider.attr('max', maxTimeInMs);
     timeSlider.attr('value', maxTimeInMs);
-    updateTimeLabel(millisToMinutesAndSeconds(timeMax));
+    updateTimeLabel(formatToMinuteSecond(timeMax));
 }
 
 // Fetches the csv, calls other functions
@@ -113,7 +113,7 @@ function fetchCsvCallOthers()
             d.duration = +d.duration;
             d.x = +d.x;
             d.y = +d.y;
-            d.avg_dilation = +d.avg_dilation;
+            // d.avg_dilation = +d.avg_dilation;    //didn't convert to number to detect null value!
         });
         mergedData = data;
         setScales(mergedData);
@@ -146,7 +146,7 @@ function setScales(data)
     const xValue = d => d.x;
     const yValue = d => d.y;
     const durationValue = d => d.duration;   // plot size
-    const pupilValue = d => d.avg_dilation;  // plot color
+    const pupilValue = d => +d.avg_dilation;  // plot color
     const timeValue = d => d.time;
     xMax = d3.max(data, xValue);
     xMin = d3.min(data, xValue);
@@ -202,6 +202,7 @@ function render(dataset)
     // Bind dataset to lines (for saccades)
     var saccades = plotG.selectAll("line")
         .data(dataset, function(d) {return d;}); //semantic binding
+    // Add lines(saccades)
     saccades.enter().append("line")
         .classed('saccade', true)
         .attr('x1', function(d,i){
@@ -224,20 +225,23 @@ function render(dataset)
     // Bind dataset to circles (for fixations)
     var fixations = plotG.selectAll("circle")
         .data(dataset, function(d) { return d; }); //semantic binding
-    // Add circles
+    // Add circles(fixations)
     fixations.enter().append("circle")
         .classed('fixation', true)
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => rScale(d.duration))
-        .attr("fill", d => colorScale(d.avg_dilation))
+        .attr("fill", function(d){
+            return (d.avg_dilation=="") ? 'darkgray' : colorScale(+d.avg_dilation);
+        })
         .attr("visibility","hidden")
         .on('mouseover', function(d) {
-            const msg = "<b>fixation #" + d.number + "</b><br>"
-                      + "<b>time</b>     " + (d.time/1000).toFixed(2) + "s <br>"
+            const msg = "<b>#" + d.number + "</b><br>"
+                      + "<b>time</b>     " + formatToMinuteSecond(d.time) + "<br>"
                       + "<b>x</b>:" + d.x+", <b>y</b>:"+d.y + "<br>"
                       + "<b>duration</b> " + d.duration + "ms <br>"
-                      + "<b>dilation</b> " + d.avg_dilation.toFixed(2) + "mm";
+                      + "<b>dilation</b> "
+                        + ((d.avg_dilation=="") ? "nan" : ((+d.avg_dilation).toFixed(2)+"mm"));
             tooltip.html(msg);
             tooltip.style("visibility", "visible");
             d3.select('#details').html(msg);
@@ -333,16 +337,17 @@ function filterByFeature(feature, val, step)
     
 }
 
-function millisToMinutesAndSeconds(millis) {
-    var minutes = Math.floor(millis / 60000);
-    var seconds = ((millis % 60000) / 1000).toFixed(0);
+//Convert milli seconds to M:SS form
+function formatToMinuteSecond(milliSeconds) {
+    var minutes = Math.floor(milliSeconds / 60000);
+    var seconds = ((milliSeconds % 60000) / 1000).toFixed(0);
     return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
 }
 
 function filterByTime(val) {
     timeSlider.attr('value', val);
     var milliSeconds = val * 1000;
-    updateTimeLabel(millisToMinutesAndSeconds(milliSeconds));
+    updateTimeLabel(formatToMinuteSecond(milliSeconds));
     // svg.select('#plotG').selectAll('circle')
     //     .style('opacity', mutedOpacity)
     //     .filter(function(d) {
@@ -572,10 +577,10 @@ function viewByTimeAndDuration()
     var xAxis = d3.axisBottom().scale(scaleX);
     var yAxis = d3.axisLeft().scale(scaleY);
 
+    var guideG = svg.select('#guideG');
     if(isViewChanged)
     {
         //remove preciously drawn guide or axes
-        var guideG = svg.select('#guideG');
         guideG.selectAll('*').remove();
 
         //draw the x axis and y axis
