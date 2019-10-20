@@ -177,7 +177,7 @@ function setScales(data)
         .range([0+20, svgHeight-50])
         .nice();
     rScale.domain([100, durationMax]).nice();
-    colorScale.domain([0, 0.3, 1]);     //fixed with exagerated changes
+    colorScale.domain([0, 0.4, 1]);     //fixed with exagerated changes
         // .domain([0, (pupilMin+pupilMax)/2, pupilMax])   //show the distribution as it is
         // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
     timeScale = d3.scaleLinear()
@@ -204,7 +204,7 @@ function render(dataset)
     var plotG = svg.select('#plotG');
 
     
-    var convexhull = plotG.append("path")
+    var convexhull = plotG.append("polygon")
         .attr('id','convexhull')
         .attr("class", "hull");
     //put scaled d.x and d.y into vertices
@@ -212,7 +212,7 @@ function render(dataset)
         vertices[i] = [xScale(d.x), yScale(d.y)];   //for convex hull
     });
     convexhull.datum(d3.polygonHull(vertices))
-        .attr("d", function(d) { console.log(d.join('L')); return "M" + d.join("L") + "Z"; });
+        .attr("points", function(d) { return d.join(" "); });
         
     showConvexhull(false);
     showSaccades(true);
@@ -261,7 +261,6 @@ function render(dataset)
                         + ((d.avg_dilation=="") ? "nan" : ((+d.avg_dilation).toFixed(2)+"mm"));
             tooltip.html(msg);
             tooltip.style("visibility", "visible");
-            d3.select('#details').html(msg);
         })
         .on("mousemove", function(d, i) {
             return tooltip.style("top",
@@ -308,6 +307,14 @@ function updateXYLocations()
         })
         .attr('x2', d => xScale(d.x))
         .attr('y2', d => yScale(d.y));
+
+    var convexhull = svg.select('#convexhull');
+    //put scaled d.x and d.y into vertices
+    mergedData.forEach(function(d,i){
+        vertices[i] = [xScale(d.x), yScale(d.y)];   //for convex hull
+    });
+    convexhull.datum(d3.polygonHull(vertices))
+        .attr("points", function(d) { return d.join(" "); });
 }
 
 function showConvexhull(state)
