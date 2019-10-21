@@ -296,7 +296,7 @@ function render(dataset)
         d3.select('#viewOption-xy').classed('active', true);
 }
 
-//update the location of each fixation and saccade
+// Update the location of each fixation and saccade
 function updateXYLocations()
 {
     var fixations = svg.select('#plotG').selectAll('circle');
@@ -328,6 +328,7 @@ function updateXYLocations()
         .attr("points", function(d) { return d.join(" "); });
 }
 
+//Show or hide convexhull, or disable the checkbox
 function showConvexhull(state)
 {
     var convexhull = svg.select('#convexhull');
@@ -349,6 +350,7 @@ function showConvexhull(state)
     }
 }
 
+// Show or hide saccades, or disable the checkbox
 function showSaccades(state)
 {
     var saccades = svg.select('#plotG').selectAll('line');
@@ -368,6 +370,17 @@ function showSaccades(state)
         saccades.style('visibility', 'hidden');
         checkbox.disabled = true;
         checkbox.checked = false;
+    }
+}
+
+// Show or hide timeSlider and lable visible
+function showTimeSlider(show){
+    if(show == true) {
+        timeSlider.style("visibility", "visible");
+        d3.select('#timeLabel').style("visibility", "visible");
+    } else {
+        timeSlider.style("visibility", "hidden");
+        d3.select('#timeLabel').style("visibility", "hidden");    
     }
 }
 
@@ -440,7 +453,7 @@ function filterByFeature(feature, val, step)
     
 }
 
-//Convert milli seconds to M:SS form
+// Convert milli seconds to M:SS form
 function formatToMinuteSecond(milliSeconds) {
     var minutes = Math.floor(milliSeconds / 60000);
     var seconds = ((milliSeconds % 60000) / 1000).toFixed(0);
@@ -753,7 +766,7 @@ function viewByTimeAndDuration()
             .transition().delay(1000).duration(1000)
             .attr('opacity',1);
 
-        //move the fixations
+        //Move the fixations
         scaleX.domain([0, timeMax]);
         scaleY.domain([0, durationMax]);
         fixations.style('visibility','visible')
@@ -773,24 +786,19 @@ function viewByTimeAndDuration()
             .append('g').attr('id','avgG')
                 .attr('transform',`translate(${marginX},${scaleY(durationMean)})`)
                 .classed('avgG', true);
+        //mean line
         avgG.append('line').attr('x2',0)
             .transition().delay(1000).duration(1000)
             .attr('x2',width);
+        //mean label
+        // avgG.append('text')
+        //     .attr('text-anchor','end')
+        //     .attr('transform',`translate(${width},${scaleY(durationMean)})`)
+        //     .text(`mean ${durationMean.toFixed(2)}`);
     // }
     // else
     // {
     //     console.log('view by time/duratoin resizing...');
     //     //TODO: handle resizing
     // }
-}
-
-//Show or hide timeSlider and lable visible
-function showTimeSlider(show){
-    if(show == true) {
-        timeSlider.style("visibility", "visible");
-        d3.select('#timeLabel').style("visibility", "visible");
-    } else {
-        timeSlider.style("visibility", "hidden");
-        d3.select('#timeLabel').style("visibility", "hidden");    
-    }
 }
