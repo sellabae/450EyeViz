@@ -717,30 +717,40 @@ function viewByTimeAndDuration()
     var yAxis = d3.axisLeft().scale(scaleY).ticks(5);
 
     var guideG = svg.select('#guideG');
-    if(isViewChanged)
-    {
+
+    // if(isViewChanged)
+    // {
         showSaccades("disable");
         showConvexhull("disable");
 
         //remove preciously drawn guide or axes
         guideG.selectAll('*').remove();
 
-        //draw the x axis and y axis
+        //Draw Axes
         guideG.classed('axis',true)
             .classed('unselectable', true);
-        var xAxis = guideG.append('g').attr('id','xAxis')
+
+        //draw x axis
+        guideG.append('g').attr('id','xAxis')
             .attr("transform", `translate(0, ${svgHeight-marginY})`)
             .call(xAxis);
-        xAxis.append("text")
-            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
-            .attr("transform", `translate(${svgWidth/2},${10})`)  // centre below axis
-            .text("Time (min)").style('color','black');
+        //x axis label
+        guideG.append("text").attr('id','xAxisLabel')
+            .attr("text-anchor", "end")
+            .attr("transform", `translate(${svgWidth-marginX},${svgHeight-marginY+35})`)
+            .text("time (min)");
+        //draw y axis
         guideG.append('g').attr('id','yAxis')
             .attr("transform", `translate(${marginX}, 0)`)
             .call(yAxis);
+        //y axis label
+        guideG.append("text").attr('id','yAxisLabel')
+            .attr("text-anchor", "end")
+            .attr("transform", `translate(${marginX-30},${marginY}) rotate(-90)`)
+            .text("duration (sec)");
         //transition
         guideG.attr('opacity',0)
-            .transition().duration(1000)
+            .transition().delay(1000).duration(1000)
             .attr('opacity',1);
 
         //move the fixations
@@ -766,12 +776,12 @@ function viewByTimeAndDuration()
         avgG.append('line').attr('x2',0)
             .transition().delay(1000).duration(1000)
             .attr('x2',width);
-    }
-    else
-    {
-        console.log('view by time/duratoin resizing...');
-        //TODO: handle resizing
-    }
+    // }
+    // else
+    // {
+    //     console.log('view by time/duratoin resizing...');
+    //     //TODO: handle resizing
+    // }
 }
 
 //Show or hide timeSlider and lable visible

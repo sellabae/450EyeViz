@@ -235,6 +235,7 @@
 
 .axis text{
     color: #AAA;
+    font-weight: lighter;
 }
 .axis line, path{
     stroke: #AAA;
