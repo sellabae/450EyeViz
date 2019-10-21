@@ -27,11 +27,11 @@
 }
 .btn-secondary {
     background-color: #999ba1;
-    border-color: white;
+    /* border-color: white; */
 }
 .btn-secondary:hover{
     background-color: #7c7c83;
-    border-color: white;
+    /* border-color: white; */
 }
 /* .btn:focus, .btn:active:focus, .btn.active:focus{
     outline:none;
@@ -44,10 +44,10 @@
     /* border: 1px solid #EEE; */
     border-radius: 3px;
 }
-#svgDiv #plotG circle {
+.fixation {
     opacity: 0.8;
 }
-#svgDiv #plotG circle:hover {
+.fixation:hover {
     opacity: 1;
     stroke: white;
     stroke-width: 1.5px;
@@ -55,12 +55,25 @@
     -webkit-filter: drop-shadow(0 0 0.75rem red);
     filter: drop-shadow(0 0 0.75rem red);  
 }
+.saccade {
+    fill: none;
+    stroke: gray;
+    stroke-width: 1px;
+    opacity: 0.3;
+}
+.hull {
+    fill: #EEE;
+    /* fill: none; */
+    /* stroke: green;
+    stroke-width: 1px; */
+    stroke: none;
+}
 .tooltipDiv{
     line-height: 1.2;
-    opacity: 0.9;
-    background-color: #EEE;
+    /* opacity: 0.9; */
+    background-color: white;
     border-radius: 3px;
-    /* border: 1px solid #EEE; */
+    border: 1px solid #EEE;
     font-size: 0.8em;
     font-weight: lighter;
     padding: 4px 6px 4px 6px;
@@ -218,4 +231,16 @@
     font-size: 0.8em;
     font-weight: lighter;
 	text-anchor: middle;
+}
+
+.axis text{
+    color: #AAA;
+}
+.axis line, path{
+    stroke: #AAA;
+}
+
+.avgG line{
+    stroke: black;
+    stroke-width: 1px;
 }

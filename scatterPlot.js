@@ -1,7 +1,11 @@
+// "use strict"
+
 //global variables
 var mergedData;
 var xMin,xMax,yMin,yMax;
 var durationMin,durationMax,pupilMin,pupilMax,timeMin,timeMax;
+var vertices = [];  //to draw convex hull
+
 //scales
 var xScale, yScale, timeScale;
 var rScale = d3.scaleLinear()
@@ -9,6 +13,7 @@ var rScale = d3.scaleLinear()
 var colorScale = d3.scaleLinear()
     .range(['#0066ff', '#d0ff00', '#f00000'])
     .interpolate(d3.interpolateHcl);
+
 //svg
 var svgDiv;
 var svg, svgWidth, svgHeight;
@@ -17,9 +22,8 @@ var svgRatio = 4/6;
 //view option
 var ViewOption = {
     XY: 1,
-    TIME: 2,
-    DURATION: 3,
-    DILATION: 4
+    TIMEDURATION: 2,
+    TIMESACCADE: 3
 };
 var currentViewOption = ViewOption.XY;
 
@@ -36,6 +40,7 @@ var highlightOpacity = 0.8;
 var mutedOpacity = 0.01;
 
 const delayValue = 0.3;
+
 
 
 // Initial document setup
@@ -60,7 +65,6 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 window.addEventListener('resize', resizeSVG);
-
 function resizeSVG(){
     //update the svg size
     svgWidth = +svgDiv.offsetWidth;
@@ -74,14 +78,8 @@ function resizeSVG(){
         case ViewOption.XY:
             viewByXY();
             break;
-        case ViewOption.TIME:
-            viewByTime();
-            break;
-        case ViewOption.DURATION:
-            viewByDuration();
-            break;
-        case ViewOption.DILATION:
-            viewByPupilDilation();
+        case ViewOption.TIMEDURATION:
+            viewByTimeAndDuration();
             break;
         default:
     }
@@ -96,14 +94,14 @@ function resetTime() {
     timeSlider.attr('max', maxTimeInMs);
     timeSlider.attr('value', maxTimeInMs);
     $("#timeRange").val(maxTimeInMs)
-    updateTimeLabel(millisToMinutesAndSeconds(timeMax));
+    updateTimeLabel(formatToMinuteSecond(timeMax));
     //timeSlider.attr("visibility", "hidden");
 }
 
 // Fetches the csv, calls other functions
 function fetchCsvCallOthers()
 {
-    makeTimeRangeInvisible();
+    showTimeSlider(false);
     clearAllFilters();    
 
     console.log('fetching csv data.');
@@ -118,17 +116,17 @@ function fetchCsvCallOthers()
     d3.csv(file)
     .then(function(data){
         //converting all rows to int
-        data.forEach(function(d) {
+        data.forEach(function(d,i) {
+            d.number = +d.number;
             d.time = +d.time;
             d.duration = +d.duration;
             d.x = +d.x;
             d.y = +d.y;
-            d.avg_dilation = +d.avg_dilation;
+            // d.avg_dilation = +d.avg_dilation;    //not convert to number in order to detect nan value!
         });
         mergedData = data;
         setScales(mergedData);
-        drawCircles(mergedData);
-       // makeTimeRangeVisible();
+        render(mergedData);
         resetTime();
     });
 }
@@ -136,11 +134,15 @@ function fetchCsvCallOthers()
 // Returns file by checking which data set to load from radio buttons
 function dataSetToLoad()
 {
+    d3.select('#dataOption').selectAll('label').classed('active', false);
+    
     if(document.getElementById("treeRadio").checked) {
         console.log('tree data selected.');
+        d3.select('#treeBtn').classed('active', true);
         return "./data_preprocessed/merged_dilation_fixation_tree.csv";
     } else {
         console.log('graph data selected.');
+        d3.select('#graphBtn').classed('active', true);
         return "./data_preprocessed/merged_dilation_fixation_graph.csv";
     }
 }
@@ -153,9 +155,8 @@ function setScales(data)
     const xValue = d => d.x;
     const yValue = d => d.y;
     const durationValue = d => d.duration;   // plot size
-    const pupilValue = d => d.avg_dilation;  // plot color
+    const pupilValue = d => +d.avg_dilation;  // plot color
     const timeValue = d => d.time;
-
     xMax = d3.max(data, xValue);
     xMin = d3.min(data, xValue);
     console.log('x '+xMin+' : '+xMax);
@@ -181,11 +182,11 @@ function setScales(data)
         .range([0+20, svgHeight-50])
         .nice();
     rScale.domain([100, durationMax]).nice();
-    colorScale.domain([0, 0.3, 1]);     //fixed with exagerated changes
+    colorScale.domain([0, 0.4, 1]);     //fixed with exagerated changes
         // .domain([0, (pupilMin+pupilMax)/2, pupilMax])   //show the distribution as it is
         // .domain([0, pupilMax*0.4, pupilMax])            //bit distorted
     timeScale = d3.scaleLinear()
-        .domain([timeMin, timeMax])
+        .domain([0, timeMax])
         .range([0, 10])
         .nice();
         
@@ -193,7 +194,7 @@ function setScales(data)
 }
 
 // Draws circle points
-function drawCircles(data)
+function render(dataset)
 {
     console.log('drawing circles.');
 
@@ -206,23 +207,66 @@ function drawCircles(data)
         .text("");
         
     var plotG = svg.select('#plotG');
-    // Bind data to circles
-    var plots = plotG.selectAll("circle")
-        .data(data, function(d) { return d; }); //semantic binding
-    // Add circles
-    plots.enter().append("circle")
+
+    
+    var convexhull = plotG.append("polygon")
+        .attr('id','convexhull')
+        .attr("class", "hull");
+    //put scaled d.x and d.y into vertices
+    vertices = [];
+    mergedData.forEach(function(d,i){
+        vertices[i] = [xScale(d.x), yScale(d.y)];   //for convex hull
+    });
+    convexhull.datum(d3.polygonHull(vertices))
+        .attr("points", function(d) { return d.join(" "); });
+        
+    showConvexhull(false);
+    showSaccades(true);
+
+    // Bind dataset to lines (for saccades)
+    var saccades = plotG.selectAll("line")
+        .data(dataset, function(d) {return d;}); //semantic binding
+    // Add lines(saccades)
+    saccades.enter().append("line")
+        .classed('saccade', true)
+        .attr('x1', function(d,i){
+            var prev = (i>0) ? dataset[i-1] : d;
+            return xScale(prev.x);
+        })
+        .attr('y1', function(d,i){
+            var prev = (i>0) ? dataset[i-1] : d;
+            return yScale(prev.y);
+        })
+        .attr('x2', d => xScale(d.x))
+        .attr('y2', d => yScale(d.y))
+        .attr('visibility','hidden')
+        .transition()
+            .delay(function(d, i){
+                return timeScale(i*d.time);
+            })
+        .attr("visibility", "visible");
+
+    // Bind dataset to circles (for fixations)
+    var fixations = plotG.selectAll("circle")
+        .data(dataset, function(d) { return d; }); //semantic binding
+    // Add circles(fixations)
+    fixations.enter().append("circle")
+        .classed('fixation', true)
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => rScale(d.duration))
-        .attr("fill", d => colorScale(d.avg_dilation))
-        .attr("visibility","hidden")
-        .on('mouseover', function(d, i) {
-            const msg = "<b>time</b> " + (d.time/1000).toFixed(2) + "s <br>"
+        .attr("fill", function(d){
+            return (d.avg_dilation=="") ? 'darkgray' : colorScale(+d.avg_dilation);
+        })
+        .on('mouseover', function(d) {
+            const msg = "<b>#" + d.number + "</b><br>"
+                      + "<b>time</b>     " + formatToMinuteSecond(d.time) + "<br>"
+                      + "<b>x</b>:" + d.x+", <b>y</b>:"+d.y + "<br>"
                       + "<b>duration</b> " + d.duration + "ms <br>"
-                      + "<b>dilation</b> " + d.avg_dilation.toFixed(2) + "mm";
+                      + "<b>dilation</b> "
+                        + ((d.avg_dilation=="") ? "nan" : ((+d.avg_dilation).toFixed(2)+"mm"));
             tooltip.html(msg);
             tooltip.style("visibility", "visible");
-            d3.select('#details').html(msg);
         })
         .on("mousemove", function(d, i) {
             return tooltip.style("top",
@@ -233,35 +277,107 @@ function drawCircles(data)
             tooltip.style("visibility", "hidden");
             d3.select('#details').html('');
         })
+        .attr("visibility","hidden")
         .transition()
-        .delay(function(d, i){
-            //console.log(d.time/1000);
-            //timeSlider.attr('value',d.time/1000);
-            //updateTimeLabel(d.time/1000);
-            return timeScale(i*d.time);
-         })
+            .delay(function(d, i){
+                return timeScale(i*d.time);
+            })
         .attr("visibility", "visible")
         .end()
         .then(() =>{
-            makeTimeRangeVisible();
+            showTimeSlider(true);
         });
-        // .transition().duration( (d,i) => {
-        //     return timeScale(i*d.duration);
-        // })
-        // .attr('r', rScale(d.duration));
-
-        // console.log('Drawing Done!');
         
-        //viewByXY();
         
+        //initial mode to xy
+        drawXYMark();
+        currentViewOption = ViewOption.XY;
+        d3.select('#viewOptions').selectAll('button').classed('active', false);
+        d3.select('#viewOption-xy').classed('active', true);
+}
 
+//update the location of each fixation and saccade
+function updateXYLocations()
+{
+    var fixations = svg.select('#plotG').selectAll('circle');
+    fixations
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
+        .attr("r", d => rScale(d.duration));
+    
+    var saccades = svg.select('#plotG').selectAll('line');
+    saccades
+        .attr('x1', function(d,i){
+            var prev = (i>0) ? mergedData[i-1] : d;
+            return xScale(prev.x);
+        })
+        .attr('y1', function(d,i){
+            var prev = (i>0) ? mergedData[i-1] : d;
+            return yScale(prev.y);
+        })
+        .attr('x2', d => xScale(d.x))
+        .attr('y2', d => yScale(d.y));
 
+    var convexhull = svg.select('#convexhull');
+    //put scaled d.x and d.y into vertices
+    vertices = [];
+    mergedData.forEach(function(d,i){
+        vertices[i] = [xScale(d.x), yScale(d.y)];   //for convex hull
+    });
+    convexhull.datum(d3.polygonHull(vertices))
+        .attr("points", function(d) { return d.join(" "); });
+}
+
+function showConvexhull(state)
+{
+    var convexhull = svg.select('#convexhull');
+    var checkbox = document.getElementById('convexhullCheckbox');
+    if(state == true) {
+        console.log('show convexhull');
+        convexhull.style('visibility', 'visible');
+        checkbox.disabled = false;
+        checkbox.checked = true;
+    } else if(state == false) {
+        console.log('hide convexhull');
+        convexhull.style('visibility', 'hidden');
+        checkbox.disabled = false;
+        checkbox.checked = false;
+    } else if(state == "disable") {
+        convexhull.style('visibility', 'hidden');
+        checkbox.disabled = true;
+        checkbox.checked = false;
+    }
+}
+
+function showSaccades(state)
+{
+    var saccades = svg.select('#plotG').selectAll('line');
+    var checkbox = document.getElementById('saccadeCheckbox');
+
+    if(state == true) {
+        console.log('show saccades');
+        saccades.style('visibility', 'visible');
+        checkbox.disabled = false;
+        checkbox.checked = true;
+    } else if(state == false) {
+        console.log('hide saccades');
+        saccades.style('visibility', 'hidden');
+        checkbox.disabled = false;
+        checkbox.checked = false;
+    } else if(state == "disable") {
+        saccades.style('visibility', 'hidden');
+        checkbox.disabled = true;
+        checkbox.checked = false;
+    }
 }
 
 // TODO: Filter with a range of values (double thumbs on the slider)
-// Filters plots by feature
+// Filters fixations by feature
 function filterByFeature(feature, val, step)
 {
+    showSaccades("disable");
+    showConvexhull("disable");
+
     if ( !(feature=='duration' || feature=='avg_dilation') ) {
         console.log('not existing feature '+feature);
         return;
@@ -307,11 +423,11 @@ function filterByFeature(feature, val, step)
 
     // Make selected data stand out
     svg.select('#plotG').selectAll('circle')
-    .style('opacity', mutedOpacity)
-    .filter(function(d) {
-        return (((d[feature] >= start) && (d[feature] <= end)) && ((d[otherFeature] >= otherStart) && (d[otherFeature] <= otherEnd)));
-    })
-    .style('opacity', highlightOpacity);
+        .style('opacity', mutedOpacity)
+        .filter(function(d) {
+            return (((d[feature] >= start) && (d[feature] <= end)) && ((d[otherFeature] >= otherStart) && (d[otherFeature] <= otherEnd)));
+        })
+        .style('opacity', highlightOpacity);
 
     //TODO: Mark the active filter on the slider.. give class to it.
     var legendSvg;
@@ -324,16 +440,19 @@ function filterByFeature(feature, val, step)
     
 }
 
-function millisToMinutesAndSeconds(millis) {
-    var minutes = Math.floor(millis / 60000);
-    var seconds = ((millis % 60000) / 1000).toFixed(0);
+//Convert milli seconds to M:SS form
+function formatToMinuteSecond(milliSeconds) {
+    var minutes = Math.floor(milliSeconds / 60000);
+    var seconds = ((milliSeconds % 60000) / 1000).toFixed(0);
     return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
 }
 
 function filterByTime(val) {
+    showConvexhull('disable');
+
     timeSlider.attr('value', val);
     var milliSeconds = val * 1000;
-    updateTimeLabel(millisToMinutesAndSeconds(milliSeconds));
+    updateTimeLabel(formatToMinuteSecond(milliSeconds));
     // svg.select('#plotG').selectAll('circle')
     //     .style('opacity', mutedOpacity)
     //     .filter(function(d) {
@@ -347,24 +466,40 @@ function filterByTime(val) {
             return (d.time <= milliSeconds);
         })
         .style('visibility', 'visible');
+
+    if(document.getElementById('saccadeCheckbox').checked == true)
+    {
+        svg.select('#plotG').selectAll('line')
+            .style('visibility', 'hidden')
+            .filter(function(d) {
+                return (d.time <= milliSeconds);
+            })
+            .style('visibility', 'visible');
+    }
+
 }
 
 // Removes filter effect when double clicked on document
 function clearAllFilters() { 
     console.log('clearing all filters.');
+    
+    //set show options to default
+    showSaccades(false);
+    showConvexhull(false);
 
     //changes actual value of sliders
     d3.select("#pupilSlider").attr("value", 0);
     d3.select("#durationSlider").attr("value", 0);
-
     //changes the view of sliders
     $("#pupilSlider").val(0);
     $("#durationSlider").val(0);
 
+    //show all plots evenly
     svg.selectAll('circle')
-    .style('opacity', basicOpacity);
-    //Clear the marks on the legend sliders
-};
+        .style('opacity', basicOpacity);
+
+    //TODO: Clear the marks on the legend sliders
+}
 
 // Draws legends with circles and scales under sliders
 function drawLegends()
@@ -435,42 +570,78 @@ function drawLegends()
 }
 
 
-// Locates plots back to its x,y coordinates
+//TODO: Implement play
+function play() {
+    console.log('play through time');
+    var i;
+    for(i=0; i<Math.round(timeMax/1000); i++) {
+        // timeSlider.value(i);
+        setTimeout(function(){
+            filterByTime(i);
+            console.log(i);
+        }, 1000);
+        //NOTE: not working yet...
+    }
+}
+
+
+// Locates fixations back to its x,y coordinates
 function viewByXY()
 {
-    console.log('locating plots by x-y.');
+    console.log('locating fixations by x-y.');
 
     //Update the view state and the button view
     var isViewChanged = (currentViewOption != ViewOption.XY);
     currentViewOption = ViewOption.XY;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
     d3.select('#viewOption-xy').classed('active', true);
+
     
     //Update the x,y scale to fit the resized svg
     xScale.range([0+20, svgWidth-50]);
     yScale.range([0+20, svgHeight-50]);
 
-    //Relocate the plots
+    //Relocate the fixations
     var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
+    var fixations = plotG.selectAll('circle');
+    var saccades = plotG.selectAll('line');
+    var convexhull = plotG.select('#convexhull');
+
+    showTimeSlider(true);
+    showSaccades(true);
+    showConvexhull(true);
+
     if(isViewChanged) {
         //transition effect for changing view
-        plots.transition()
+        drawXYMark();
+        fixations.transition()
             .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeExp).duration(2000)
+            .ease(d3.easeCubic).duration(1000)
             .style('visibility','visible')
             // .style('opacity', basicOpacity)
             .attr('cx', d => xScale(d.x))
-            .attr('cy', d => yScale(d.y));
+            .attr('cy', d => yScale(d.y))
+            .attr('r', d => rScale(d.duration));
+        
+        saccades
+            .style('opacity',0)
+            .transition().delay(1000) 
+            .style('visibility','visible')
+            .transition().duration(1000)
+            .style('opacity',0.3);
+        convexhull
+            .style('opacity',0)
+            .transition().delay(1000)
+            .style('visibility','visible')
+            .transition().duration(1000)
+            .style('opacity',1);
+        
     } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => xScale(d.x))
-            .attr('cy', d => yScale(d.y));
+        //just resizing the svg. update the locations!
+        updateXYLocations();
+        fixations.style('visibility','visible')
+        saccades.style('visibility','visible');
     }
-
-    //Redraw guides
-    drawXYMark();
 
 }
 
@@ -500,293 +671,116 @@ function drawXYMark()
 
     guideG.selectAll('line').classed('axis-line',true);
     guideG.selectAll('text').classed('axis-stepText',true);
+
+    //transition
+    guideG.attr('opacity',0)
+        .transition().duration(1000)
+        .attr('opacity',1);
     
 }
 
-// Locates plots aligned in the center line by time
-function viewByTime()
+
+
+function viewByTimeAndDuration()
 {
-    console.log('locating plots by time.');
-
+    console.log('View the line graph of time and duration.');
     //Update the view state and the button view
-    var isViewChanged = (currentViewOption != ViewOption.TIME);
-    currentViewOption = ViewOption.TIME;
+    var isViewChanged = (currentViewOption != ViewOption.TIMEDURATION);
+    currentViewOption = ViewOption.TIMEDURATION;
     d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-time').classed('active', true);
-    
-    const gap = 20; //gap from the svg border
+    d3.select('#viewOption-timeduration').classed('active', true);
 
-    //Relocate the plots
+
+    const marginX = 50; //left&right margin of graph from the svg border
+    // const marginY = 200; //top&bottom margin of graph from the svg border
+    const width = svgWidth - marginX*2;
+    const height = 200;
+    const marginY = (svgHeight-height)/2;
+
     const plotG = d3.select('#plotG');
-    const plots = plotG.selectAll('circle');
-    var scaleX = timeScale.range([gap, svgWidth-gap]);
-    if(isViewChanged) {
-        //transition effect for changing view
-        plots.transition()
-            .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeElastic).duration(2000)
-            .style('visibility','visible')
-            // .style('opacity', basicOpacity)
-            .attr('cx', d => scaleX(d.time))
-            .attr('cy', d => { return svgHeight/2;});
-    } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => scaleX(d.time))
-            .attr('cy', d => { return svgHeight/2;});
-    }
- 
-    //Redraw guides
-    const guide = { width:svgWidth-gap*2, margin:0, dotSize:2, color:'gray' };
-    const yOffset = svgHeight/2+50;
-
-    const steps = [];
-    const oneMinuteInMS = 60000; //1minute = 60000ms
-    const maxMin = timeMax/oneMinuteInMS;
-    var i;
-    for(i=0; i<=maxMin; i+=1){
-        steps.push(i);
-    }
-    var largestMS = steps[steps.length-1] * oneMinuteInMS;
+    const fixations = plotG.selectAll('circle');
+    const saccades = plotG.selectAll('line');
+    saccades.transition().duration(500)
+        .style('opacity',0).style('visiblity','hidden');
+    const saccadeCheckbox = document.getElementById('saccadeCheckbox');
+    saccadeCheckbox.checked = false;
+    saccadeCheckbox.disabled = true;
 
     var scaleX = d3.scaleLinear()
-        .domain([0, timeMax])
-        .range([0, guide.width]);
-    var remainedX = scaleX(timeMax - largestMS);
-    // console.log("remainedX: "+remainedX);
-    redrawXAxis('Time', 'min', steps, guide.width-remainedX, yOffset, guide.margin);
-    svg.select('#guideG').attr('transform',`translate(${gap},${yOffset})`);
-
-}
-
-//TODO: Implement play
-function play() {
-    console.log('play through time');
-    var i;
-    for(i=0; i<Math.round(timeMax/1000); i++) {
-        // timeSlider.value(i);
-        setTimeout(function(){
-            filterByTime(i);
-            console.log(i);
-        }, 1000);
-        //NOTE: not working yet...
-    }
-}
-
-// Locates Plots with duration on x axis
-function viewByDuration()
-{
-    console.log('locating plots by duration.');
-
-    //Update the view state and the button view
-    var isViewChanged = (currentViewOption != ViewOption.DURATION);
-    currentViewOption = ViewOption.DURATION;
-    d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-duration').classed('active', true);
-
-    //Relocate the plots
-    const steps = [0, 0.5, 1, 1.5, 2];
-    const guide = { width:400, margin:50, dotSize:2, color:'gray' };
-
-    var scaleX = d3.scaleLinear()
-        .domain([0, d3.max(steps)])
-        .range([guide.margin, guide.width - guide.margin]);
+        .domain([0, timeMax/60000])
+        .range([marginX, svgWidth-marginX]);
     var scaleY = d3.scaleLinear()
-        .domain([0,3000])
-        .range([svgHeight-70, 50]);
+        .domain([0, durationMax/1000])
+        .range([svgHeight-marginY, marginY]);
 
-    var xOffset = svgWidth/2-guide.width/2;
+    var xAxis = d3.axisBottom().scale(scaleX);
+    var yAxis = d3.axisLeft().scale(scaleY).ticks(5);
 
-    //relocate plots
-    var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
-    
-    //Solution3. with scaleQuantize instead of using .filter()
-    var scaleQ = d3.scaleQuantize()
-        .domain([-250, 2250])
-        .range(steps);
+    var guideG = svg.select('#guideG');
+    if(isViewChanged)
+    {
+        showSaccades("disable");
+        showConvexhull("disable");
 
-    if(isViewChanged) {
-        //transition effect for changing view
-        plots.transition()
+        //remove preciously drawn guide or axes
+        guideG.selectAll('*').remove();
+
+        //draw the x axis and y axis
+        guideG.classed('axis',true)
+            .classed('unselectable', true);
+        var xAxis = guideG.append('g').attr('id','xAxis')
+            .attr("transform", `translate(0, ${svgHeight-marginY})`)
+            .call(xAxis);
+        xAxis.append("text")
+            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            .attr("transform", `translate(${svgWidth/2},${10})`)  // centre below axis
+            .text("Time (min)").style('color','black');
+        guideG.append('g').attr('id','yAxis')
+            .attr("transform", `translate(${marginX}, 0)`)
+            .call(yAxis);
+        //transition
+        guideG.attr('opacity',0)
+            .transition().duration(1000)
+            .attr('opacity',1);
+
+        //move the fixations
+        scaleX.domain([0, timeMax]);
+        scaleY.domain([0, durationMax]);
+        fixations.style('visibility','visible')
+            .transition()
             .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeElastic).duration(2000)
-            .style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
-    } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.duration)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
+            .ease(d3.easeCubic).duration(1000)
+            .attr('cx', d => scaleX(d.time))
+            .attr('cy', d => scaleY(d.duration))
+            .attr('r', 3);
+
+        //Calculate the mean duration
+        const durationValue = d => d.duration;
+        var durationMean = d3.mean(mergedData, durationValue);
+        console.log('Duration Mean: '+durationMean.toFixed(0));
+        //Show the mean duration
+        var avgG = svg.select('#guideG')
+            .append('g').attr('id','avgG')
+                .attr('transform',`translate(${marginX},${scaleY(durationMean)})`)
+                .classed('avgG', true);
+        avgG.append('line').attr('x2',0)
+            .transition().delay(1000).duration(1000)
+            .attr('x2',width);
     }
-    //TODO: Solve the problem of plots not placed from the bottom
-        
-    //TODO: Show count for each steps?
-
-
-    // //Solution1. filter() with ForEach loop
-    // //this only shows the plots of first step (steps[0]) why??
-    // var inclusiveVal = (steps[1]-steps[0])/2 *1000;
-    // var start, end;
-    // var filteredPlots;
-    // steps.forEach(function(step) {
-    //     step = step * 1000;
-    //     start = step - inclusiveVal;
-    //     end = step + inclusiveVal;
-    //     console.log(`moving dots for duration ${step}s (${start} ~ ${end}ms)`);
-        
-    //     filteredPlots = plots.filter(function(d) {
-    //         return (d.duration >= start) && (d.duration <= end);
-    //     });
-        
-    //     filteredPlots
-    //         // .transition()
-    //         // .delay(function(d,i){ return i * delayValue; }) 
-    //         // .ease(d3.easeExp).duration(2000)
-    //         .attr('visibility','visible')
-    //         .attr('cx', scaleX(step) + xOffset)
-    //         .attr('cy', (d,i) => scaleY(i));
-    // });
-
-
-    // //Solution2. filter() with manual repetition for each steps
-    // //this works exactly as desired, but ugly code..
-    // plots.filter(function(d) {
-    //     return (d.duration >= 0) && (d.duration <= 250);
-    // })
-    //     .attr('cx', scaleX(0) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 250) && (d.duration <= 750);
-    // })
-    //     .attr('cx', scaleX(0.5) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 750) && (d.duration <= 1250);
-    // })
-    //     .attr('cx', scaleX(1) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 1250) && (d.duration <= 1750);
-    // })
-    //     .attr('cx', scaleX(1.5) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-    // plots.filter(function(d) {
-    //     return (d.duration > 1750);
-    // })
-    //     .attr('cx', scaleX(2) + xOffset)
-    //     .attr('cy', (d,i) => scaleY(i));
-
-
-    //Redraw guides
-    redrawXAxis('Fixation Duration', 's', steps);
-
-}
-
-// Locates Plots with pupil dilation on x axis
-function viewByPupilDilation()
-{
-    console.log('locating plots by pupil dilation.');
-
-    //Update the view state and the button view
-    var isViewChanged = (currentViewOption != ViewOption.DILATION);
-    currentViewOption = ViewOption.DILATION;
-    d3.select('#viewOptions').selectAll('button').classed('active', false);
-    d3.select('#viewOption-dilation').classed('active', true);
-
-    //Relocate the plots
-    const steps = [0, 0.25, 0.5, 0.75, 1];
-    const guide = { width:400, margin:50, dotSize:2, color:'gray' };
-
-    var scaleX = d3.scaleLinear()
-        .domain([0, d3.max(steps)])
-        .range([guide.margin, guide.width - guide.margin]);
-    var scaleY = d3.scaleLinear()
-        .domain([0,3000])
-        .range([svgHeight-70, 50]);
-
-    var xOffset = svgWidth/2-guide.width/2;
-
-    //relocate plots
-    var plotG = d3.select('#plotG');
-    var plots = plotG.selectAll('circle');
-
-    //Solution3. with scaleQuantize instead of using .filter()
-    var scaleQ = d3.scaleQuantize()
-        .domain([-0.125, 1.125])
-        .range(steps);
-
-    if(isViewChanged) {
-        //transition effect for changing view
-        plots.transition()
-            .delay(function(d,i){ return i * delayValue; }) 
-            .ease(d3.easeElastic).duration(2000)
-            .style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
-    } else {
-        //just resizing the svg
-        plots.style('visibility','visible')
-            .attr('cx', d => scaleX(scaleQ(d.avg_dilation)) + xOffset)
-            .attr('cy', (d,i) => scaleY(i));
+    else
+    {
+        console.log('view by time/duratoin resizing...');
+        //TODO: handle resizing
     }
-    //TODO: Solve the problem of plots not placed from the bottom
-        
-    //TODO: Show count for each steps?
-    
-
-    //Redraw guides
-    redrawXAxis('Pupil Dilation', 'mm', steps);
-
 }
 
-// Helps viewByDuration() and viewByPupilDilation() to redraw guideG in svg
-function redrawXAxis(label='label', unit='', steps, width=400, yOffset=svgHeight-55, margin=50)
-{
-    var scaleX = d3.scaleLinear()
-        .domain([0, d3.max(steps)])
-        .range([margin, width-margin]);
-    
-    //Redraw guides
-    const guideG = svg.select('#guideG');
-    guideG.selectAll('*').remove();    //remove all previously drawn guides
-    guideG.attr('transform',`translate(${svgWidth/2-width/2},${yOffset})`);
-    guideG.append('line')
-        .attr('x2', width)
-        .classed('axis-line', true);
-    guideG.selectAll('circle')
-            .data(steps)
-        .enter().append('circle')
-            .attr('cx', d => scaleX(d))
-            .classed('axis-stepDot', true);
-    guideG.selectAll('text')
-            .data(steps)
-        .enter().append('text')
-            .attr('x', d => scaleX(d))
-            .attr('y', 20)
-            .text(d => {return d;})
-            .classed('axis-stepText', true);
-    guideG.append('text')
-        .attr('x', width/2)
-        .attr('y', 40)
-        .text(label+' ('+unit+')')
-        .classed('axis-label', true);
-
-}
-
-//making timeSlider and timeLable visible after plotting
-function makeTimeRangeVisible(){
-    timeSlider.style("visibility", "visible");
-    d3.select('#timeLabel').style("visibility", "visible");    
-
-        
-}
-
-//making timeSlider and timeLable visible after plotting
-function makeTimeRangeInvisible(){
-    timeSlider.style("visibility", "hidden");
-    d3.select('#timeLabel').style("visibility", "hidden");    
-
-        
+//Show or hide timeSlider and lable visible
+function showTimeSlider(show){
+    if(show == true) {
+        timeSlider.style("visibility", "visible");
+        d3.select('#timeLabel').style("visibility", "visible");
+    } else {
+        timeSlider.style("visibility", "hidden");
+        d3.select('#timeLabel').style("visibility", "hidden");    
+    }
 }
