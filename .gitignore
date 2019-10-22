@@ -2,3 +2,6 @@
 .DS_STORE
 # other assets
 assets/others
+
+# Etc.
+*.code-workspace
